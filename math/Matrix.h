@@ -33,7 +33,7 @@ public:
 
   // 3) unary operators
   Matrix<T, N, M> operator-() const;
-  T getNorm() const;
+  T norm() const;
 };
 
 // Check that i < Max
@@ -123,7 +123,7 @@ Matrix<T, N, M> operator-(const Matrix<T, N, M> &m1,
 }
 
 template <typename T, std::size_t N, std::size_t M>
-T Matrix<T, N, M>::getNorm() const {
+T Matrix<T, N, M>::norm() const {
   T norm = 0;
   for (const T &el : matData) {
     norm += el * el;

@@ -4,7 +4,7 @@ LIBS = -lglfw -lglm
 
 OBJ = main.o  WindowManager.o \
 
-HEADERS =  WindowManager.h
+HEADERS =  WindowManager.h math/Matrix.h math/MatrixUtils.h
 SRC = WindowManager.cpp main.cpp
 
 
