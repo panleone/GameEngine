@@ -3,27 +3,23 @@
 #include <memory>
 
 #include "../../math/MatrixUtils.h"
-Cube::Cube(float size, Vec3f iPos, Vec3f iVel)
-    : Entity(std::move(iPos), std::move(iVel)) {
-  size /= 2.0f;
+Cube::Cube(float size, Vec3f iPos, Vec3f iVel, Vec3f iAxis, float iAngVel,
+           float theta)
+    : Entity(std::move(iPos), std::move(iVel), std::move(iAxis), iAngVel,
+             theta) {
+  this->scale = size;
   std::vector<float> vertices = {
-      size,  size,  -size, size,  -size, -size,
-      -size, -size, -size, -size, size,  -size,
+      1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+      -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,
 
-      size,  size,  size,  size,  -size, size,
-      -size, -size, size,  -size, size,  size,
+      -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,
+      -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
 
-      size,  -size, size,  -size, -size, size,
-      -size, -size, -size, size,  -size, -size,
+      1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
+      1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f,
 
-      size,  size,  size,  -size, size,  size,
-      -size, size,  -size, size,  size,  -size,
-
-      size,  size,  size,  size,  size,  -size,
-      size,  -size, -size, size,  -size, size,
-
-      -size, size,  size,  -size, size,  -size,
-      -size, -size, -size, -size, -size, size,
+      1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,
+      -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,
   };
   std::vector<unsigned int> indices = {
       0,  1,  2,  0,  2,  3,  4,  5,  6,  4,  6,  7,  8,  9,  10, 8,  10, 11,
@@ -43,7 +39,9 @@ Cube::Cube(float size, Vec3f iPos, Vec3f iVel)
 void Cube::render(const Camera &camera) const {
   this->program->use();
 
-  Mat4f modelMatrix = mat::translate(position);
+  Mat4f modelMatrix = mat::translate(position) *
+                      mat::scale(Vec3f{scale, scale, scale}) *
+                      mat::rotate(theta, rotationAxis.clone());
   Mat4f pvmMatrix =
       camera.getProjectionMatrix() * camera.getViewMatrix() * modelMatrix;
   program->setUniform("pvmMatrix", pvmMatrix);

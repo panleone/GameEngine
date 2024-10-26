@@ -14,11 +14,25 @@ protected:
   std::unique_ptr<ShaderProgram> program;
 
 public:
+  // Linear coordinates
   Vec3f position;
   Vec3f velocity;
-  Entity(Vec3f iPos = {0.0f, 0.0f, 0.0f}, Vec3f iVel = {0.0f, 0.0f, 0.0f})
-      : position{std::move(iPos)}, velocity{std::move(iVel)} {}
-  void update(float deltaT) { position += velocity * deltaT; }
+  // Angular coordinates
+  float theta;
+  Vec3f rotationAxis;
+  float angularVelocity;
+  // Scaling
+  float scale = 1.0f;
+
+  Entity(Vec3f iPos = Vec3f(), Vec3f iVel = Vec3f(), Vec3f iAxis = Vec3f(),
+         float iAngVel = 0.0f, float theta = 0.0f)
+      : position{std::move(iPos)}, velocity{std::move(iVel)},
+        rotationAxis{std::move(iAxis)}, angularVelocity{iAngVel},
+        theta{theta} {};
+  void update(float deltaT) {
+    position += velocity * deltaT;
+    theta += angularVelocity * deltaT;
+  }
   virtual void render(const Camera &camera) const = 0;
 
   virtual ~Entity() = default;
