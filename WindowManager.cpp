@@ -46,3 +46,5 @@ float WindowManager::getWindowAspectRatio() const {
 bool WindowManager::shouldClose() const {
   return glfwWindowShouldClose(window);
 }
+
+void WindowManager::swapBuffers() const { glfwSwapBuffers(window); }
