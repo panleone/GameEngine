@@ -179,7 +179,8 @@ template <typename T, std::size_t N> class Vector : public Matrix<T, N, 1> {
 public:
   Vector(Matrix<T, N, 1> &&mat) : Matrix<T, N, 1>{std::move(mat)} {};
   template <typename... U>
-    requires(sizeof...(U) == N * 1) && (std::is_same_v<T, U> && ...)
+    requires(sizeof...(U) == N * 1) &&
+            (std::is_same_v<T, std::decay_t<U>> && ...)
   Vector(U &&...args) {
     this->matData = {std::forward<U>(args)...};
   };
