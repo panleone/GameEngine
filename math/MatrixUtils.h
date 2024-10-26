@@ -145,6 +145,8 @@ inline Mat4f orthographicProjection(float r, float l, float b, float t, float n,
 inline Mat4f orthographicProjection(float r, float t, float n, float f) {
   return orthographicProjection(r, -r, -t, t, n, f);
 }
+
+inline float toRads(float degrees) { return degrees * (M_PI / 180); }
 } // namespace mat
 
 #endif // MATRIX_UTILS_C
