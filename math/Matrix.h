@@ -2,6 +2,7 @@
 #define MATRIX_C
 
 #include <ostream>
+#include <span>
 #include <type_traits>
 #include <vector>
 
@@ -34,6 +35,10 @@ public:
   // 3) unary operators
   Matrix<T, N, M> operator-() const;
   T norm() const;
+
+  std::span<T, N * M> data() {
+    return std::span<T, N * M>(matData.data(), N * M);
+  }
 };
 
 // Check that i < Max
