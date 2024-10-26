@@ -20,7 +20,11 @@ void processInput(Camera &camera, float deltaTime) {
 }
 int main() {
   Camera camera{45};
-  Cube cube{1, {1.0f, 0.0f, 0.0f}};
+  Cube cube{1.0f,
+            {1.0f, 0.0f, -5.0f},
+            {0.0f, 0.0f, 0.0f},
+            mat::normalize(Vec3f{1.0f, 1.0f, 0.0f}),
+            1.0f};
 
   float deltaTime;
   float lastFrame = glfwGetTime();
@@ -33,9 +37,12 @@ int main() {
     lastFrame = currentFrame;
 
     // handle user inputs
+    glfwPollEvents();
     processInput(camera, deltaTime);
     globalWindowManager->resetOffests();
-    glfwPollEvents();
+
+    // update Entities
+    cube.update(deltaTime);
 
     // render
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
