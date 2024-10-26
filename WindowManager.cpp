@@ -2,12 +2,37 @@
 
 #include <stdexcept>
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+static void framebuffer_size_callback(GLFWwindow *window, int width,
+                                      int height) {
   glViewport(0, 0, width, height);
   if (globalWindowManager) {
     globalWindowManager->screenWidth = width;
     globalWindowManager->screenHeight = height;
   }
+}
+
+static void scroll_callback(GLFWwindow *window, double xoffset,
+                            double yoffset) {
+  if (globalWindowManager)
+    globalWindowManager->mouseScrollOffset += yoffset;
+}
+
+static void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+  static bool mouseInitialized = false;
+  static float oldMouseXpos = 0.0f;
+  static float oldMouseYpos = 0.0f;
+
+  if (!globalWindowManager)
+    return;
+  if (!mouseInitialized) {
+    oldMouseXpos = xpos;
+    oldMouseYpos = ypos;
+    mouseInitialized = true;
+  }
+  globalWindowManager->mouseXOffset = xpos - oldMouseXpos;
+  globalWindowManager->mouseYOffset = oldMouseYpos - ypos;
+  oldMouseXpos = xpos;
+  oldMouseYpos = ypos;
 }
 
 WindowManager::~WindowManager() { glfwTerminate(); }
@@ -35,6 +60,8 @@ WindowManager::WindowManager(float screenWidth, float screenHeight)
   }
   glViewport(0, 0, screenWidth, screenHeight);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+  glfwSetScrollCallback(window, scroll_callback);
+  glfwSetCursorPosCallback(window, mouse_callback);
 }
 
 bool WindowManager::created{false};

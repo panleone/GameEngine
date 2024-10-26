@@ -11,6 +11,12 @@ private:
   GLFWwindow *window;
 
 public:
+  // Global variable updated in the callback functions
+  // Mouse variables
+  float mouseScrollOffset;
+  float mouseXOffset;
+  float mouseYOffset;
+
   // Screen variables
   float screenWidth;
   float screenHeight;
