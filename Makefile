@@ -3,10 +3,16 @@ CXXFLAGS=-std=c++20 -I./include
 LIBS = -lglfw -lglm
 
 OBJ = main.o  WindowManager.o \
+ 		objects/Shader.o objects/Model.o \
+		objects/cube/Cube.o
 
-HEADERS =  WindowManager.h math/Matrix.h math/MatrixUtils.h
-SRC = WindowManager.cpp main.cpp
-
+HEADERS =  WindowManager.h \
+			math/Matrix.h math/MatrixUtils.h \
+ 			objects/Entity.h objects/Shader.h objects/Model.h \
+ 			objects/cube/Cube.h
+SRC = WindowManager.cpp main.cpp \
+		objects/Shader.cpp objects/Model.cpp \
+		objects/cube/Cube.cpp
 
 BIN = GameEngine
 
