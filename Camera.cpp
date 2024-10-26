@@ -35,3 +35,9 @@ void Camera::setViewMatrix(float mouseXposOffset, float mouseYposOffset) {
   cameraFront(2) = -cos(theta_rad) * cos(phi_rad);
   viewMatrix = mat::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
+
+void Camera::setCameraPos(float dX, float dY, float dZ) {
+  cameraPos += dX * mat::cross(cameraFront, cameraUp);
+  cameraPos += dY * cameraUp;
+  cameraPos += dZ * cameraFront;
+}

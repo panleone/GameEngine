@@ -81,3 +81,15 @@ void WindowManager::resetOffests() {
   this->mouseXOffset = 0.0f;
   this->mouseYOffset = 0.0f;
 }
+
+bool WindowManager::isKeyPressed(int key) const {
+  return glfwGetKey(window, key) == GLFW_PRESS;
+}
+
+void WindowManager::disableMouseCursor() {
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void WindowManager::enableMouseCursor() {
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}

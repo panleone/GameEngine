@@ -28,6 +28,9 @@ public:
   bool shouldClose() const;
   void swapBuffers() const;
   void resetOffests();
+  bool isKeyPressed(int key) const;
+  void disableMouseCursor();
+  void enableMouseCursor();
 };
 
 // Global Singleton WindowManager
