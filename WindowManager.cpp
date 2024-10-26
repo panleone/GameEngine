@@ -75,3 +75,9 @@ bool WindowManager::shouldClose() const {
 }
 
 void WindowManager::swapBuffers() const { glfwSwapBuffers(window); }
+
+void WindowManager::resetOffests() {
+  this->mouseScrollOffset = 0.0f;
+  this->mouseXOffset = 0.0f;
+  this->mouseYOffset = 0.0f;
+}

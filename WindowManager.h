@@ -27,6 +27,7 @@ public:
   float getWindowAspectRatio() const;
   bool shouldClose() const;
   void swapBuffers() const;
+  void resetOffests();
 };
 
 // Global Singleton WindowManager
