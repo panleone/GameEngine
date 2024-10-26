@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "../../math/MatrixUtils.h"
 Cube::Cube(float size, Vec3f iPos, Vec3f iVel)
     : Entity(std::move(iPos), std::move(iVel)) {
   size /= 2.0f;
@@ -39,7 +40,12 @@ Cube::Cube(float size, Vec3f iPos, Vec3f iVel)
                                                   "objects/cube/Cube.fs");
 }
 
-void Cube::render() const {
+void Cube::render(const Camera &camera) const {
   this->program->use();
+
+  Mat4f modelMatrix = mat::translate(position);
+  Mat4f pvmMatrix =
+      camera.getProjectionMatrix() * camera.getViewMatrix() * modelMatrix;
+  program->setUniform("pvmMatrix", pvmMatrix);
   this->model->bindAndDraw();
 };
