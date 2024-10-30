@@ -31,7 +31,7 @@ inline Mat4f scale(const Vec3f &scalingVector) {
   return scalingMatrix;
 }
 // Returns the rotation matrix of angle theta around the versor direction
-inline Mat4f rotate(float theta, const Vec3f direction) {
+inline Mat4f rotate(float theta, const Vec3f &direction) {
   float ux = direction(0);
   float uy = direction(1);
   float uz = direction(2);
