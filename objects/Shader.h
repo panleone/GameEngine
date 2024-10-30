@@ -7,7 +7,7 @@
 
 #include "../math/Matrix.h"
 
-enum class ShaderType { VERTEX, FRAGMENT };
+enum class ShaderType { VERTEX, FRAGMENT, GEOMETRY };
 
 class Shader {
 private:
@@ -27,6 +27,8 @@ public:
 class ShaderProgram {
 public:
   ShaderProgram(std::string_view vShaderFile, std::string_view fShaderFile);
+  ShaderProgram(std::string_view vShaderFile, std::string_view fShaderFile,
+                std::string_view gShaderFile);
   void use() const;
 
   template <typename T>
