@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-std=c++20 -I./include
+CXXFLAGS=-std=c++20 -I./libs/include
 LIBS = -lglfw -lglm
 
 OBJ = main.o WindowManager.o Camera.o \
@@ -25,7 +25,7 @@ $(BIN) : $(OBJ) glad.o
 $(OBJ) : $(HEADERS) Makefile
 
 glad.o:
-	$(CXX) $(CXXFLAGS) -c src/glad.c
+	$(CXX) $(CXXFLAGS) -c libs/src/glad.c
 
 .PHONY: clean format
 clean:
