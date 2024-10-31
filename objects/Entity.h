@@ -7,7 +7,7 @@
 #include "../math/Matrix.h"
 #include "Light.h"
 #include "Model.h"
-#include "Shader.h"
+#include "../shaders/Shader.h"
 
 class Entity {
 protected:
