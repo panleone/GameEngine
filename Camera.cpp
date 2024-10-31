@@ -41,3 +41,5 @@ void Camera::setCameraPos(float dX, float dY, float dZ) {
   cameraPos += dY * cameraUp;
   cameraPos += dZ * cameraFront;
 }
+
+const Vec3f &Camera::getCameraPos() const { return this->cameraPos; }

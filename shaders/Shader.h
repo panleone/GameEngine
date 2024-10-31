@@ -7,7 +7,7 @@
 
 #include "../math/Matrix.h"
 
-enum class ShaderType { VERTEX, FRAGMENT };
+enum class ShaderType { VERTEX, FRAGMENT, GEOMETRY };
 
 class Shader {
 private:
@@ -27,6 +27,8 @@ public:
 class ShaderProgram {
 public:
   ShaderProgram(std::string_view vShaderFile, std::string_view fShaderFile);
+  ShaderProgram(std::string_view vShaderFile, std::string_view fShaderFile,
+                std::string_view gShaderFile);
   void use() const;
 
   template <typename T>
@@ -45,6 +47,8 @@ public:
       glUniform1f(uniformLocation, std::forward<T>(val));
     } else if constexpr (std::is_same_v<std::decay_t<T>, Mat4f>) {
       glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, val.data().data());
+    } else if constexpr (std::is_same_v<std::decay_t<T>, Vec3f>) {
+      glUniform3fv(uniformLocation, 1, val.data().data());
     } else {
       static_assert(false);
     }

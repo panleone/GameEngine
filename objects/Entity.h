@@ -5,8 +5,9 @@
 
 #include "../Camera.h"
 #include "../math/Matrix.h"
+#include "Light.h"
 #include "Model.h"
-#include "Shader.h"
+#include "../shaders/Shader.h"
 
 class Entity {
 protected:
@@ -34,7 +35,12 @@ public:
     theta += angularVelocity * deltaT;
   }
   virtual void render(const Camera &camera) const = 0;
-
+  virtual void updateLight(const Light &light) = 0;
   virtual ~Entity() = default;
+
+  Mat4f modelMatrix() const {
+    return mat::translate(position) * mat::scale(Vec3f{scale, scale, scale}) *
+           mat::rotate(theta, rotationAxis);
+  }
 };
 #endif // ENTITY_C

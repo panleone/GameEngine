@@ -10,8 +10,13 @@ static std::string fileToString(std::string_view fileLocation) {
 }
 
 Shader::Shader(ShaderType shaderType) noexcept : shaderType{shaderType} {
-  shaderId = glCreateShader(
-      shaderType == ShaderType::VERTEX ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
+  int glShaderType = GL_VERTEX_SHADER;
+  if (shaderType == ShaderType::FRAGMENT) {
+    glShaderType = GL_FRAGMENT_SHADER;
+  } else if (shaderType == ShaderType::GEOMETRY) {
+    glShaderType = GL_GEOMETRY_SHADER;
+  }
+  shaderId = glCreateShader(glShaderType);
 }
 
 Shader::~Shader() noexcept { glDeleteShader(shaderId); }
@@ -46,6 +51,33 @@ ShaderProgram::ShaderProgram(std::string_view vShaderFile,
   glAttachShader(programId, fShader.getId());
   glLinkProgram(programId);
   glDetachShader(programId, vShader.getId());
+  glDetachShader(programId, fShader.getId());
+
+  int success;
+  glGetProgramiv(programId, GL_LINK_STATUS, &success);
+  if (!success)
+    throw std::runtime_error("Cannot link the shader program!");
+}
+
+ShaderProgram::ShaderProgram(std::string_view vShaderFile,
+                             std::string_view fShaderFile,
+                             std::string_view gShaderFile) {
+  Shader vShader = Shader(ShaderType::VERTEX);
+  vShader.compile(vShaderFile);
+
+  Shader gShader = Shader(ShaderType::GEOMETRY);
+  gShader.compile(gShaderFile);
+
+  Shader fShader = Shader(ShaderType::FRAGMENT);
+  fShader.compile(fShaderFile);
+
+  programId = glCreateProgram();
+  glAttachShader(programId, vShader.getId());
+  glAttachShader(programId, gShader.getId());
+  glAttachShader(programId, fShader.getId());
+  glLinkProgram(programId);
+  glDetachShader(programId, vShader.getId());
+  glDetachShader(programId, gShader.getId());
   glDetachShader(programId, fShader.getId());
 
   int success;
