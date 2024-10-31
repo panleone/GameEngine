@@ -23,18 +23,30 @@ Cube::Cube(float size, Vec3f iPos, Vec3f iVel, Vec3f iAxis, float iAngVel,
   };
   this->model =
       std::make_unique<Model>(vertices, indices, std::move(attrPointer));
-  this->program = std::make_unique<ShaderProgram>("objects/cube/Cube.vs",
-                                                  "objects/cube/Cube.fs");
+  this->program = std::make_unique<ShaderProgram>(
+      "shaders/phong_light_model/phong_light.vs",
+      "shaders/phong_light_model/phong_light.fs",
+      "shaders/phong_light_model/phong_light.gs");
+
+  program->setUniform("material.ambient", Vec3f{1.0f, 0.5f, 0.31f});
+  program->setUniform("material.diffuse", Vec3f{1.0f, 0.5f, 0.31f});
+  program->setUniform("material.specular", Vec3f{0.5f, 0.5f, 0.5f});
+  program->setUniform("material.shininess", 32.0f);
 }
 
 void Cube::render(const Camera &camera) const {
   this->program->use();
 
-  Mat4f modelMatrix = mat::translate(position) *
-                      mat::scale(Vec3f{scale, scale, scale}) *
-                      mat::rotate(theta, rotationAxis);
-  Mat4f pvmMatrix =
-      camera.getProjectionMatrix() * camera.getViewMatrix() * modelMatrix;
-  program->setUniform("pvmMatrix", pvmMatrix);
+  Mat4f pvMatrix = camera.getProjectionMatrix() * camera.getViewMatrix();
+  program->setUniform("mMatrix", modelMatrix());
+  program->setUniform("pvMatrix", pvMatrix);
+  program->setUniform("eyePos", camera.getCameraPos());
   this->model->bindAndDraw();
-};
+}
+
+void Cube::updateLight(const Light &light) {
+  program->setUniform("light.position", light.getPosition());
+  program->setUniform("light.ambient", light.ambientIntensity());
+  program->setUniform("light.diffuse", light.diffuseIntensity());
+  program->setUniform("light.specular", light.specularIntensity());
+}

@@ -4,15 +4,16 @@ LIBS = -lglfw -lglm
 
 OBJ = main.o WindowManager.o Camera.o \
  		objects/Shader.o objects/Model.o \
-		objects/cube/Cube.o
+		objects/cube/Cube.o objects/cubic_light_source/CubicLight.o
 
 HEADERS =  WindowManager.h Camera.h \
 			math/Matrix.h math/MatrixUtils.h \
  			objects/Entity.h objects/Shader.h objects/Model.h \
- 			objects/cube/Cube.h
+ 			objects/cube/Cube.h objects/cubic_light_source/CubicLight.h \
+ 			objects/Light.h
 SRC = WindowManager.cpp main.cpp Camera.cpp \
 		objects/Shader.cpp objects/Model.cpp \
-		objects/cube/Cube.cpp
+		objects/cube/Cube.cpp objects/cubic_light_source/CubicLight.cpp
 
 BIN = GameEngine
 

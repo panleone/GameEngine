@@ -36,8 +36,8 @@ public:
   Matrix<T, N, M> operator-() const;
   T norm() const;
 
-  std::span<T, N * M> data() {
-    return std::span<T, N * M>(matData.data(), N * M);
+  std::span<const T, N * M> data() const {
+    return std::span<const T, N * M>(this->matData.data(), N * M);
   }
 };
 

@@ -27,6 +27,7 @@ public:
   void setOrthographicMatrix(float r, float t);
   void setViewMatrix(float mouseXposOffset, float mouseYposOffset);
   void setCameraPos(float dX, float dY, float dZ);
+  const Vec3f &getCameraPos() const;
 };
 
 #endif // CAMERA_C
