@@ -14,13 +14,13 @@ private:
   float phi = 0;
   float theta = 0;
   Vec3f cameraUp{0.0f, 1.0f, 0.0f};
-  Vec3f cameraPos{0.0f, 0.0f, 1.0f};
+  Vec3f cameraPos;
   Vec3f cameraFront{0.0f, 0.0f, -1.0f};
 
 public:
-  Camera(float fov)
+  Camera(float fov, Vec3f position = Vec3f{})
       : viewMatrix{mat::identity()}, projectionMatrix{mat::identity()},
-        fov{fov} {};
+        fov{fov}, cameraPos{std::move(position)} {};
   const Mat4f &getProjectionMatrix() const;
   const Mat4f &getViewMatrix() const;
   void setProjectiveMatrix(float mouseScrollOffset, float aspectRatio);
