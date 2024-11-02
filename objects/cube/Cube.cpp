@@ -66,4 +66,5 @@ void Cube::updateLight(const Light &light) {
   program->setUniform("light.ambient", light.ambientIntensity());
   program->setUniform("light.diffuse", light.diffuseIntensity());
   program->setUniform("light.specular", light.specularIntensity());
+  program->setUniform("light.attenuation", light.attenuationCoefficients());
 }

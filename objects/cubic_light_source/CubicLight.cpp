@@ -40,5 +40,8 @@ void CubicLight::render(const Camera &camera) const {
 
 Vec3f CubicLight::getPosition() const { return this->position.clone(); }
 Vec3f CubicLight::ambientIntensity() const { return this->lightColor * 0.2f; }
-Vec3f CubicLight::diffuseIntensity() const { return lightColor * 0.2f; }
+Vec3f CubicLight::diffuseIntensity() const { return lightColor * 0.25f; }
 Vec3f CubicLight::specularIntensity() const { return lightColor.clone(); }
+Vec3f CubicLight::attenuationCoefficients() const {
+  return Vec3f{1.0f, 0.022f, 0.0019f};
+}

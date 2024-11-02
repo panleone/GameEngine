@@ -19,6 +19,7 @@ public:
   Vec3f ambientIntensity() const override;
   Vec3f diffuseIntensity() const override;
   Vec3f specularIntensity() const override;
+  Vec3f attenuationCoefficients() const override;
 
   // For the moment light sources are not affected by other light sources
   void updateLight(const Light &light) override { return; };

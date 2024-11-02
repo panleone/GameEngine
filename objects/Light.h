@@ -10,6 +10,7 @@ public:
   virtual Vec3f ambientIntensity() const = 0;
   virtual Vec3f diffuseIntensity() const = 0;
   virtual Vec3f specularIntensity() const = 0;
+  virtual Vec3f attenuationCoefficients() const = 0;
 };
 
 #endif // LIGHT_C
