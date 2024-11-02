@@ -24,17 +24,17 @@ void processInput(Camera &camera, float deltaTime) {
 }
 class EntityManager {
   std::vector<Entity *> entities;
-  Light *lightSource;
+  std::vector<Light *> lights;
 
 public:
   void addEntity(Entity *entity) { entities.push_back(entity); };
-  void setLightSource(Light *source) { lightSource = source; };
+  void addLight(Light *source) { lights.push_back(source); };
   void update(float deltaTime) {
     for (Entity *entity : entities) {
       entity->update(deltaTime);
     }
     for (Entity *entity : entities) {
-      entity->updateLight(*lightSource);
+      entity->handleLights(std::span<Light *>{lights});
     }
   }
   void render(const Camera &camera) {
@@ -48,11 +48,24 @@ int main() {
   Camera camera{45, Vec3f{0.0f, 0.0f, 8.0f}};
   Cube cube{
       1.0f, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, 1.0f};
-  CubicLight lightSource{0.2f, {0.0f, 0.0f, -2.0f}, {0.0f, 0.0f, 0.0f}};
+  CubicLight lightSource1{0.2f, {0.0f, 0.0f, -2.0f}, {0.0f, 0.0f, 0.0f}};
+  CubicLight lightSource2{0.2f, {0.0f, 0.0f, 2.0f}, {0.0f, 0.0f, 0.0f}};
+  CubicLight lightSource3{0.2f, {2.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}};
+  CubicLight lightSource4{0.2f, {-2.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}};
+
+  lightSource2.setColor({0.0f, 1.0f, 0.0f});
+  lightSource3.setColor({1.0f, 0.0f, 0.0f});
+  lightSource4.setColor({0.0f, 0.0f, 1.0f});
 
   entityManager.addEntity(&cube);
-  entityManager.addEntity(&lightSource);
-  entityManager.setLightSource(&lightSource);
+  entityManager.addEntity(&lightSource1);
+  entityManager.addLight(&lightSource1);
+  entityManager.addEntity(&lightSource2);
+  entityManager.addLight(&lightSource2);
+  entityManager.addEntity(&lightSource3);
+  entityManager.addLight(&lightSource3);
+  entityManager.addEntity(&lightSource4);
+  entityManager.addLight(&lightSource4);
 
   globalWindowManager->disableMouseCursor();
   glEnable(GL_DEPTH_TEST);
@@ -73,8 +86,6 @@ int main() {
 
     // update Entities
     entityManager.update(deltaTime);
-    lightSource.velocity(0) = 2 * cos(glfwGetTime() - startTime);
-    lightSource.velocity(2) = 2 * sin(glfwGetTime() - startTime);
 
     // render
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
