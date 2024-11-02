@@ -30,9 +30,15 @@ Model::Model(std::span<float> vertices, std::span<unsigned int> indices,
 }
 
 void Model::bindAndDraw() const {
+  for (const auto &[i, texture] : textures) {
+    texture.bind(i);
+  }
   glBindVertexArray(vaoID);
   glDrawElements(GL_TRIANGLES, nVertices, GL_UNSIGNED_INT, 0);
-  glBindVertexArray(0);
+}
+
+void Model::addTexture(unsigned int textureSlot, std::string_view texturePath) {
+  textures.push_back(std::make_pair(textureSlot, Texture(texturePath)));
 }
 
 Model::~Model() {
