@@ -1,6 +1,7 @@
 #include "Cube.h"
 
 #include <memory>
+#include <ranges>
 
 #include "../../math/MatrixUtils.h"
 Cube::Cube(float size, Vec3f iPos, Vec3f iVel, Vec3f iAxis, float iAngVel,
@@ -61,10 +62,24 @@ void Cube::render(const Camera &camera) const {
   this->model->bindAndDraw();
 }
 
-void Cube::updateLight(const Light &light) {
-  program->setUniform("light.position", light.getPosition());
-  program->setUniform("light.ambient", light.ambientIntensity());
-  program->setUniform("light.diffuse", light.diffuseIntensity());
-  program->setUniform("light.specular", light.specularIntensity());
-  program->setUniform("light.attenuation", light.attenuationCoefficients());
+static void handleLight(const Light *light, std::size_t i,
+                        const ShaderProgram &program) {
+  std::string uniformName = std::format("lights[{}]", i);
+  program.setUniform(std::format("{}.position", uniformName),
+                     light->getPosition());
+  program.setUniform(std::format("{}.ambient", uniformName),
+                     light->ambientIntensity());
+  program.setUniform(std::format("{}.diffuse", uniformName),
+                     light->diffuseIntensity());
+  program.setUniform(std::format("{}.specular", uniformName),
+                     light->specularIntensity());
+  program.setUniform(std::format("{}.attenuation", uniformName),
+                     light->attenuationCoefficients());
+}
+
+void Cube::handleLights(std::span<Light *> lights) {
+  for (const auto &[i, light] : std::views::enumerate(lights)) {
+    handleLight(light, i, *program);
+  }
+  program->setUniform("nLights", lights.size());
 }

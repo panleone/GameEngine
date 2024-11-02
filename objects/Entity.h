@@ -35,7 +35,7 @@ public:
     theta += angularVelocity * deltaT;
   }
   virtual void render(const Camera &camera) const = 0;
-  virtual void updateLight(const Light &light) = 0;
+  virtual void handleLights(std::span<Light *> lights) = 0;
   virtual ~Entity() = default;
 
   Mat4f modelMatrix() const {
