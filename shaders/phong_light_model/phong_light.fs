@@ -12,6 +12,7 @@ struct Light {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+    vec3 attenuation;
 };
 
 in vec3 normal;
@@ -23,21 +24,36 @@ out vec4 FragColor;
 uniform vec3 eyePos;
 
 uniform Material material;
-uniform Light light;
+#define N_MAX_LIGHTS 10
+uniform Light lights[N_MAX_LIGHTS];
+uniform int nLights = 0;
 
-void main()
-{
-    vec3 ambient = light.ambient*vec3(texture(material.diffuse, TexCoord));
+vec3 CalcLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos){
+    vec3 diffuseTexel = vec3(texture(material.diffuse, TexCoord));
+    vec3 specularTexel = vec3(texture(material.specular, TexCoord));
+
+    vec3 ambient = light.ambient * diffuseTexel;
 
     vec3 lightDir = normalize(light.position - fragPos);
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffusion = light.diffuse*(diff*vec3(texture(material.diffuse, TexCoord)));
+    vec3 diffusion = light.diffuse * diff * diffuseTexel;
 
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 viewDir = normalize(eyePos - fragPos);
     float spec = pow(max(dot(reflectDir, viewDir), 0.0),material.shininess);
-    vec3 specular = light.specular*(vec3(texture(material.specular, TexCoord)) * spec);
+    vec3 specular = light.specular * specularTexel * spec;
 
-    vec3 result = ambient + diffusion + specular;
-    FragColor = vec4(result, 1.0);
+    float d = length(fragPos - light.position);
+    vec3 dVec = vec3(1, d, d*d);
+    float attenuation = 1.0/dot(light.attenuation, dVec);
+
+    return (ambient + diffusion + specular) * attenuation;
+}
+void main()
+{
+    vec3 color = vec3(0.0);
+    for (int i = 0; i < nLights; i++){
+        color += CalcLightColor(lights[i], normal, fragPos, eyePos);
+    }
+    FragColor = vec4(color, 1.0);
 }
