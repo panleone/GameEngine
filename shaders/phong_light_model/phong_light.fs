@@ -22,11 +22,12 @@ in vec2 TexCoord;
 out vec4 FragColor;
 
 uniform vec3 eyePos;
-
 uniform Material material;
 #define N_MAX_LIGHTS 10
 uniform Light lights[N_MAX_LIGHTS];
 uniform int nLights = 0;
+
+uniform bool blinnCorrection = true;
 
 vec3 CalcLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos){
     vec3 diffuseTexel = vec3(texture(material.texture_diffuse1, TexCoord));
@@ -38,9 +39,15 @@ vec3 CalcLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos){
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffusion = light.diffuse * diff * diffuseTexel;
 
-    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = 0;
     vec3 viewDir = normalize(eyePos - fragPos);
-    float spec = pow(max(dot(reflectDir, viewDir), 0.0), 32.0);
+    if(blinnCorrection){
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        spec = pow(max(dot(halfwayDir, normal), 0.0), 32.0);
+    } else {
+        vec3 reflectDir = reflect(-lightDir, normal);
+        spec = pow(max(dot(reflectDir, viewDir), 0.0), 32.0);
+    }
     vec3 specular = light.specular * specularTexel * spec;
 
     float d = length(fragPos - light.position);

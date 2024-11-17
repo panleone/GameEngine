@@ -66,6 +66,8 @@ WindowManager::WindowManager(float screenWidth, float screenHeight)
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetScrollCallback(window, scroll_callback);
   glfwSetCursorPosCallback(window, mouse_callback);
+  // Enable gamma correction
+  glEnable(GL_FRAMEBUFFER_SRGB);
 }
 
 bool WindowManager::created{false};
