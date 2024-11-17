@@ -1,48 +1,171 @@
 #include "Model.h"
 
-#include <glad/glad.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <ranges>
 
-// TODO: Might need refactor once there are more complex Models
-Model::Model(std::span<float> vertices, std::span<unsigned int> indices,
-             std::function<void()> attrPointers)
-    : nVertices{indices.size()} {
+static TextureType assimpConverter(aiTextureType type) {
+  switch (type) {
+  case aiTextureType_SPECULAR:
+    return TextureType::SPECULAR;
+  case aiTextureType_DIFFUSE:
+    return TextureType::DIFFUSE;
+  default:
+    throw std::runtime_error("assimp texture not supported yet");
+  }
+}
+
+Mesh::Mesh(std::span<Vertex> vertices, std::span<unsigned int> indices,
+           std::vector<std::shared_ptr<Texture>> textures)
+    : nVertices{indices.size()}, textures{std::move(textures)} {
+  setupMesh(vertices, indices);
+}
+
+void Mesh::setupMesh(std::span<Vertex> vertices,
+                     std::span<unsigned int> indices) {
   // Generate buffers
-  glGenVertexArrays(1, &vaoID);
-  glGenBuffers(1, &vboID);
-  glGenBuffers(1, &eboID);
+  rawMesh = std::make_shared<RawMesh>();
 
-  // Bind and fill
-  glBindVertexArray(vaoID);
-  glBindBuffer(GL_ARRAY_BUFFER, vboID);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(),
+  glBindVertexArray(rawMesh->getVAO());
+  glBindBuffer(GL_ARRAY_BUFFER, rawMesh->getVBO());
+  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex),
                vertices.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(),
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rawMesh->getEBO());
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
                indices.data(), GL_STATIC_DRAW);
 
-  // Connect VAO to shader entries
-  attrPointers();
+  // vertex positions
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        (void *)(offsetof(Vertex, position)));
+  // vertex normals
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        (void *)(offsetof(Vertex, normal)));
+  // vertex texture coords
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        (void *)(offsetof(Vertex, texCoords)));
 
   // Unbind
   glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Model::bindAndDraw() const {
-  for (const auto &[i, texture] : textures) {
-    texture.bind(i);
+void Mesh::render(const ShaderProgram &shader) const {
+  unsigned int diffuseNr = 0;
+  unsigned int specularNr = 0;
+  for (const auto &[i, texture] : std::views::enumerate(textures)) {
+    int number;
+    glActiveTexture(GL_TEXTURE0 + i);
+    if (texture->getType() == TextureType::DIFFUSE) {
+      number = ++diffuseNr;
+    } else if (texture->getType() == TextureType::SPECULAR) {
+      number = ++specularNr;
+    } else {
+      throw std::runtime_error("Texture not supported yet");
+    }
+    // Ignore the return type since some shaders
+    // simply might not be using all the textures of the model.
+    shader.setTexture(texture->getType(), number, i);
+    texture->bind();
   }
-  glBindVertexArray(vaoID);
-  glDrawElements(GL_TRIANGLES, nVertices, GL_UNSIGNED_INT, 0);
+  glBindVertexArray(rawMesh->getVAO());
+  glDrawElements(GL_TRIANGLES, this->nVertices, GL_UNSIGNED_INT, 0);
+  glBindVertexArray(0);
 }
 
-void Model::addTexture(unsigned int textureSlot, std::string_view texturePath) {
-  textures.push_back(std::make_pair(textureSlot, Texture(texturePath)));
+Model::Model(std::string_view path) { loadModel(path); }
+
+void Model::render(const ShaderProgram &program) const {
+  for (const Mesh &mesh : meshes) {
+    mesh.render(program);
+  }
 }
 
-Model::~Model() {
-  glDeleteBuffers(1, &vboID);
-  glDeleteBuffers(1, &eboID);
-  glDeleteBuffers(1, &vaoID);
+void Model::loadModel(std::string_view path) {
+  Assimp::Importer importer;
+  const aiScene *scene =
+      importer.ReadFile(path.data(), aiProcess_Triangulate | aiProcess_FlipUVs);
+  if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
+      !scene->mRootNode) {
+    throw std::runtime_error(
+        std::format("Assimp error {}", importer.GetErrorString()));
+  }
+  directory = path.substr(0, path.find_last_of('/'));
+  processNode(scene->mRootNode, scene);
+  loadedTextures.clear();
+  directory.clear();
+}
+
+void Model::processNode(aiNode *node, const aiScene *scene) {
+  for (int i = 0; i < node->mNumMeshes; i++) {
+    meshes.push_back(processMesh(scene->mMeshes[node->mMeshes[i]], scene));
+  }
+  for (int i = 0; i < node->mNumChildren; i++) {
+    processNode(node->mChildren[i], scene);
+  }
+}
+
+Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
+  std::vector<Vertex> vertices;
+  std::vector<unsigned int> indices;
+  std::vector<std::shared_ptr<Texture>> textures;
+
+  for (int i = 0; i < mesh->mNumVertices; i++) {
+    Vertex vertex;
+    vertex.position[0] = mesh->mVertices[i].x;
+    vertex.position[1] = mesh->mVertices[i].y;
+    vertex.position[2] = mesh->mVertices[i].z;
+
+    vertex.normal[0] = mesh->mNormals[i].x;
+    vertex.normal[1] = mesh->mNormals[i].y;
+    vertex.normal[2] = mesh->mNormals[i].z;
+
+    if (mesh->mTextureCoords[0]) {
+      vertex.texCoords[0] = mesh->mTextureCoords[0][i].x;
+      vertex.texCoords[1] = mesh->mTextureCoords[0][i].y;
+    }
+    vertices.push_back(std::move(vertex));
+  }
+  for (int i = 0; i < mesh->mNumFaces; i++) {
+    aiFace face = mesh->mFaces[i];
+    for (int j = 0; j < face.mNumIndices; j++) {
+      indices.push_back(face.mIndices[j]);
+    }
+  }
+  if (mesh->mMaterialIndex >= 0) {
+    aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
+    std::vector<std::shared_ptr<Texture>> diffuseMaps =
+        loadMaterialTextures(material, aiTextureType_DIFFUSE);
+    textures.insert(textures.end(),
+                    std::make_move_iterator(diffuseMaps.begin()),
+                    std::make_move_iterator(diffuseMaps.end()));
+    std::vector<std::shared_ptr<Texture>> specularMaps =
+        loadMaterialTextures(material, aiTextureType_SPECULAR);
+    textures.insert(textures.end(),
+                    std::make_move_iterator(specularMaps.begin()),
+                    std::make_move_iterator(specularMaps.end()));
+  }
+  return Mesh{vertices, indices, std::move(textures)};
+}
+
+std::vector<std::shared_ptr<Texture>>
+Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type) {
+  std::vector<std::shared_ptr<Texture>> res;
+  for (int i = 0; i < mat->GetTextureCount(type); i++) {
+    aiString str;
+    mat->GetTexture(type, i, &str);
+    std::string path = std::format("{}/{}", directory, str.C_Str());
+    if (loadedTextures.count(path) > 0) {
+      res.push_back(loadedTextures.at(path));
+      continue;
+    }
+
+    std::shared_ptr<Texture> texture =
+        std::make_shared<Texture>(path, assimpConverter(type));
+    loadedTextures.insert(std::pair(path, texture));
+    res.push_back(std::move(texture));
+  }
+  return res;
 }
