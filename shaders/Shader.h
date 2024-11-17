@@ -32,10 +32,10 @@ public:
   void use() const;
 
   template <typename T>
-  void setUniform(std::string_view uniformName, T &&val) const {
+  bool setUniform(std::string_view uniformName, T &&val) const {
     auto uniformLocation = glGetUniformLocation(programId, uniformName.data());
     if (uniformLocation == -1) {
-      throw std::runtime_error("Cannot find the uniform location!");
+      return false;
     }
     // Fetch the program in use
     GLint activeProgramId = 0;
@@ -56,6 +56,7 @@ public:
     }
     // Reactivate the old program
     glUseProgram(activeProgramId);
+    return true;
   }
 
 private:
