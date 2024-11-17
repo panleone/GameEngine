@@ -15,7 +15,14 @@ private:
   TextureType type;
 
 public:
-  Texture(std::string_view texturePath, TextureType type);
+  /**
+   * Create a texture from a file
+   * @param texturePath - path to the texture file (e.g ./.../*.png)
+   * @param type - type of the texture
+   * @param gammaCorr - whether to enable gamma correction, true by default
+   */
+  Texture(std::string_view texturePath, TextureType type,
+          bool gammaCorr = true);
   Texture(const Texture &texture) = delete;
   Texture(Texture &&texture) = delete;
   void bind() const;

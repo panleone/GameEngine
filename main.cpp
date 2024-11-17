@@ -67,13 +67,6 @@ std::map<std::string, ShaderProgram> loadShaders() {
   return res;
 }
 
-void setUpLight(Light &light) {
-  light.ambientIntensity = light.lightColor * 0.1f;
-  light.diffuseIntensity = light.lightColor * 0.25f;
-  light.specularIntensity = light.lightColor.clone();
-  light.attenuationCoefficients = Vec3f{1.0f, 0.09f, 0.032f};
-}
-
 // TODO: move in another file
 class EntityManager {
   std::vector<Entity *> entities;
@@ -143,25 +136,21 @@ int main() {
 
   Entity backpack(models.at("backpack"));
   backpack.rotationAxis = Vec3f(0.0f, 0.0f, 1.0f);
-  backpack.angularVelocity = 1.0f;
+  backpack.angularVelocity = 0.0f;
   entityManager.addEntity(&backpack);
 
   Light light{models.at("cube"), Vec3f(1.0f, 0.0f, 0.0f)};
   light.position(0) = -4.0f;
   light.scale = 0.2f;
-  setUpLight(light);
   Light light2{models.at("cube"), Vec3f(0.0f, 1.0f, 0.0f)};
   light2.position(0) = 4.0f;
   light2.scale = 0.2f;
-  setUpLight(light2);
   Light light3{models.at("cube"), Vec3f(1.0f, 1.0f, 1.0f)};
   light3.position(1) = 4.0f;
   light3.scale = 0.2f;
-  setUpLight(light3);
   Light light4{models.at("cube"), Vec3f(0.0f, 0.0f, 1.0f)};
   light4.position(1) = -4.0f;
   light4.scale = 0.2f;
-  setUpLight(light4);
   entityManager.addLight(&light);
   entityManager.addLight(&light2);
   entityManager.addLight(&light3);
