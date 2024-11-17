@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "../math/Matrix.h"
+#include "../textures/Texture.h"
 
 enum class ShaderType { VERTEX, FRAGMENT, GEOMETRY };
 
@@ -32,10 +33,10 @@ public:
   void use() const;
 
   template <typename T>
-  void setUniform(std::string_view uniformName, T &&val) const {
+  bool setUniform(std::string_view uniformName, T &&val) const {
     auto uniformLocation = glGetUniformLocation(programId, uniformName.data());
     if (uniformLocation == -1) {
-      throw std::runtime_error("Cannot find the uniform location!");
+      return false;
     }
     // Fetch the program in use
     GLint activeProgramId = 0;
@@ -56,7 +57,17 @@ public:
     }
     // Reactivate the old program
     glUseProgram(activeProgramId);
+    return true;
   }
+  /**
+   * Set a 2D texture in the shader.
+   * @param textureType - type of the texture (Diffuse or Specular)
+   * @param textureNumber - number of the texture: ex 1 for the first diffuse
+   * @param textureUnit - texture unit in which the texture is activated
+   * @return
+   */
+  bool setTexture(TextureType textureType, int textureNumber,
+                  int textureUnit) const;
 
 private:
   unsigned int programId;

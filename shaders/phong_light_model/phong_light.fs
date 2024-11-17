@@ -1,8 +1,8 @@
 #version 330 core
 
 struct Material {
-    sampler2D diffuse;
-    sampler2D specular;
+    sampler2D texture_diffuse1;
+    sampler2D texture_specular1;
     float shininess;
 };
 
@@ -29,8 +29,8 @@ uniform Light lights[N_MAX_LIGHTS];
 uniform int nLights = 0;
 
 vec3 CalcLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos){
-    vec3 diffuseTexel = vec3(texture(material.diffuse, TexCoord));
-    vec3 specularTexel = vec3(texture(material.specular, TexCoord));
+    vec3 diffuseTexel = vec3(texture(material.texture_diffuse1, TexCoord));
+    vec3 specularTexel = vec3(texture(material.texture_specular1, TexCoord));
 
     vec3 ambient = light.ambient * diffuseTexel;
 
@@ -40,7 +40,7 @@ vec3 CalcLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos){
 
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 viewDir = normalize(eyePos - fragPos);
-    float spec = pow(max(dot(reflectDir, viewDir), 0.0),material.shininess);
+    float spec = pow(max(dot(reflectDir, viewDir), 0.0), 32.0);
     vec3 specular = light.specular * specularTexel * spec;
 
     float d = length(fragPos - light.position);

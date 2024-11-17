@@ -9,6 +9,19 @@ static std::string fileToString(std::string_view fileLocation) {
   return stringStream.str();
 }
 
+// Follow this convention when creating shaders
+static std::string textureTypeConverter(TextureType textureType,
+                                        int textureNumber) {
+  switch (textureType) {
+  case TextureType::DIFFUSE:
+    return std::format("material.texture_diffuse{}", textureNumber);
+  case TextureType::SPECULAR:
+    return std::format("material.texture_specular{}", textureNumber);
+  default:
+    throw std::runtime_error("texture type not supported yet");
+  }
+}
+
 Shader::Shader(ShaderType shaderType) noexcept : shaderType{shaderType} {
   int glShaderType = GL_VERTEX_SHADER;
   if (shaderType == ShaderType::FRAGMENT) {
@@ -87,3 +100,9 @@ ShaderProgram::ShaderProgram(std::string_view vShaderFile,
 }
 
 void ShaderProgram::use() const { glUseProgram(programId); }
+
+bool ShaderProgram::setTexture(TextureType textureType, int textureNumber,
+                               int textureUnit) const {
+  return setUniform(textureTypeConverter(textureType, textureNumber),
+                    textureUnit);
+}
