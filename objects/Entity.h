@@ -1,42 +1,32 @@
 #ifndef ENTITY_C
 #define ENTITY_C
 
-#include <memory>
-
-#include "../Camera.h"
 #include "../math/Matrix.h"
-#include "Light.h"
-#include "Model.h"
+#include "../math/MatrixUtils.h"
 #include "../shaders/Shader.h"
+#include "Model.h"
 
 class Entity {
-protected:
-  std::unique_ptr<Model> model;
-  std::unique_ptr<ShaderProgram> program;
+private:
+  Model model;
 
 public:
   // Linear coordinates
-  Vec3f position;
-  Vec3f velocity;
+  Vec3f position = Vec3f();
+  Vec3f velocity = Vec3f();
   // Angular coordinates
-  float theta;
-  Vec3f rotationAxis;
-  float angularVelocity;
+  float theta = 0.0f;
+  Vec3f rotationAxis = Vec3f();
+  float angularVelocity = 0.0f;
   // Scaling
   float scale = 1.0f;
 
-  Entity(Vec3f iPos = Vec3f(), Vec3f iVel = Vec3f(), Vec3f iAxis = Vec3f(),
-         float iAngVel = 0.0f, float theta = 0.0f)
-      : position{std::move(iPos)}, velocity{std::move(iVel)},
-        rotationAxis{std::move(iAxis)}, angularVelocity{iAngVel},
-        theta{theta} {};
+  Entity(Model model) : model{std::move(model)} {};
   void update(float deltaT) {
     position += velocity * deltaT;
     theta += angularVelocity * deltaT;
   }
-  virtual void render(const Camera &camera) const = 0;
-  virtual void handleLights(std::span<Light *> lights) = 0;
-  virtual ~Entity() = default;
+  void render(const ShaderProgram &program) const { model.render(program); };
 
   Mat4f modelMatrix() const {
     return mat::translate(position) * mat::scale(Vec3f{scale, scale, scale}) *

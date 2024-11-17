@@ -3,14 +3,17 @@
 
 #include "../math/Matrix.h"
 
-class Light {
+class Light : public Entity {
 public:
-  virtual ~Light() = default;
-  virtual Vec3f getPosition() const = 0;
-  virtual Vec3f ambientIntensity() const = 0;
-  virtual Vec3f diffuseIntensity() const = 0;
-  virtual Vec3f specularIntensity() const = 0;
-  virtual Vec3f attenuationCoefficients() const = 0;
+  Vec3f lightColor;
+  Vec3f ambientIntensity = Vec3f();
+  Vec3f diffuseIntensity = Vec3f();
+  Vec3f specularIntensity = Vec3f();
+  Vec3f attenuationCoefficients = Vec3f();
+
+public:
+  Light(Model model, Vec3f lightColor)
+      : Entity{std::move(model)}, lightColor{std::move(lightColor)} {};
 };
 
 #endif // LIGHT_C
