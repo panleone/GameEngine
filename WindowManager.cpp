@@ -35,7 +35,10 @@ static void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
   oldMouseYpos = ypos;
 }
 
-WindowManager::~WindowManager() { glfwTerminate(); }
+WindowManager::~WindowManager() {
+  glfwDestroyWindow(window);
+  glfwTerminate();
+}
 
 WindowManager::WindowManager(float screenWidth, float screenHeight)
     : screenWidth{screenWidth}, screenHeight{screenHeight} {
@@ -55,6 +58,7 @@ WindowManager::WindowManager(float screenWidth, float screenHeight)
   }
   glfwMakeContextCurrent(window);
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    glfwDestroyWindow(window);
     glfwTerminate();
     throw std::runtime_error("Failed to initialize GLAD");
   }
