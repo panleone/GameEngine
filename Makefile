@@ -4,17 +4,17 @@ LIBS = -lglfw -lglm -lassimp
 
 OBJ = main.o WindowManager.o Camera.o \
 		shaders/Shader.o \
- 		objects/Model.o \
+ 		objects/Model.o objects/EntityManager.o \
 		textures/Texture.o
 
 HEADERS =  WindowManager.h Camera.h \
 			math/Matrix.h math/MatrixUtils.h \
- 			objects/Entity.h objects/Light.h objects/Model.h \
+ 			objects/Entity.h objects/Light.h objects/Model.h objects/EntityManager.h \
  			shaders/Shader.h \
  			textures/Texture.h
 SRC = WindowManager.cpp main.cpp Camera.cpp \
 		shaders/Shader.cpp \
-		objects/Model.cpp \
+		objects/Model.cpp objects/EntityManager.cpp \
 		textures/Texture.cpp
 
 BIN = GameEngine
