@@ -4,6 +4,10 @@
 #include "Matrix.h"
 
 namespace mat {
+inline float distance2(const Vec3f &v1, const Vec3f &v2) {
+  Vec3f v3 = v1 - v2;
+  return v3.norm2();
+}
 // Returns the identity matrix
 inline Mat4f identity() {
   Mat4f id;

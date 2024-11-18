@@ -35,6 +35,7 @@ public:
   // 3) unary operators
   Matrix<T, N, M> operator-() const;
   T norm() const;
+  T norm2() const;
 
   std::span<const T, N * M> data() const {
     return std::span<const T, N * M>(this->matData.data(), N * M);
@@ -129,11 +130,16 @@ Matrix<T, N, M> operator-(const Matrix<T, N, M> &m1,
 
 template <typename T, std::size_t N, std::size_t M>
 T Matrix<T, N, M>::norm() const {
-  T norm = 0;
+  return sqrt(norm2());
+}
+
+template <typename T, std::size_t N, std::size_t M>
+T Matrix<T, N, M>::norm2() const {
+  T norm2 = 0;
   for (const T &el : matData) {
-    norm += el * el;
+    norm2 += el * el;
   }
-  return sqrt(norm);
+  return norm2;
 }
 
 template <typename T, std::size_t N, std::size_t M>
