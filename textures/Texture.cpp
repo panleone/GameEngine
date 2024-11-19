@@ -33,25 +33,30 @@ static unsigned int getImageOutputFormat(unsigned int nChannels,
 }
 
 Texture::Texture(std::string_view texturePath, TextureType type, bool gammaCorr)
-    : type{type} {
-  int width, height, nChannels;
+    : type{type}, rawTexture{} {
   stbi_set_flip_vertically_on_load(true);
-  unsigned char *data =
-      stbi_load(texturePath.data(), &width, &height, &nChannels, 0);
+  stbiWrapper wrapper{texturePath};
+  rawTexture.bind();
+  unsigned int inputFormat = getImageInputFormat(wrapper.nChannels);
+  unsigned int outputFormat =
+      getImageOutputFormat(wrapper.nChannels, gammaCorr);
+  glTexImage2D(GL_TEXTURE_2D, 0, outputFormat, wrapper.width, wrapper.height, 0,
+               inputFormat, GL_UNSIGNED_BYTE, wrapper.getData());
+  glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+void Texture::bind() const { rawTexture.bind(); }
+
+void RawTexture::bind() const { glBindTexture(GL_TEXTURE_2D, textureID); }
+RawTexture::RawTexture() { glGenTextures(1, &textureID); }
+RawTexture::~RawTexture() { glDeleteBuffers(1, &textureID); }
+
+stbiWrapper::stbiWrapper(std::string_view texturePath) {
+  data = stbi_load(texturePath.data(), &width, &height, &nChannels, 0);
   if (!data) {
+    // Ok in this case destructor must not be called anyways
     throw std::runtime_error(
         std::format("Cannot load texture {}!", texturePath));
   }
-  glGenTextures(1, &textureID);
-  glBindTexture(GL_TEXTURE_2D, textureID);
-  unsigned int inputFormat = getImageInputFormat(nChannels);
-  unsigned int outputFormat = getImageOutputFormat(nChannels, gammaCorr);
-  glTexImage2D(GL_TEXTURE_2D, 0, outputFormat, width, height, 0, inputFormat,
-               GL_UNSIGNED_BYTE, data);
-  glGenerateMipmap(GL_TEXTURE_2D);
-  stbi_image_free(data);
 }
-
-void Texture::bind() const { glBindTexture(GL_TEXTURE_2D, textureID); }
-
-Texture::~Texture() { glDeleteBuffers(1, &textureID); }
+stbiWrapper::~stbiWrapper() { stbi_image_free(data); }

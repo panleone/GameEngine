@@ -29,27 +29,27 @@ Shader::Shader(ShaderType shaderType) noexcept : shaderType{shaderType} {
   } else if (shaderType == ShaderType::GEOMETRY) {
     glShaderType = GL_GEOMETRY_SHADER;
   }
-  shaderId = glCreateShader(glShaderType);
+  shaderID = glCreateShader(glShaderType);
 }
 
-Shader::~Shader() noexcept { glDeleteShader(shaderId); }
+Shader::~Shader() noexcept { glDeleteShader(shaderID); }
 
 void Shader::compile(std::string_view shaderFile) const {
   std::string shaderSourceCode = fileToString(shaderFile);
   auto shaderSourceCodePtr = shaderSourceCode.data();
-  glShaderSource(shaderId, 1, &shaderSourceCodePtr, nullptr);
-  glCompileShader(shaderId);
+  glShaderSource(shaderID, 1, &shaderSourceCodePtr, nullptr);
+  glCompileShader(shaderID);
 
   int success;
   char infoLog[512];
-  glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
+  glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
   if (!success) {
-    glGetShaderInfoLog(shaderId, sizeof infoLog, nullptr, infoLog);
+    glGetShaderInfoLog(shaderID, sizeof infoLog, nullptr, infoLog);
     throw std::runtime_error(infoLog);
   }
 }
 
-unsigned int Shader::getId() const { return this->shaderId; }
+unsigned int Shader::getID() const { return this->shaderID; }
 
 ShaderProgram::ShaderProgram(std::string_view vShaderFile,
                              std::string_view fShaderFile) {
@@ -59,15 +59,16 @@ ShaderProgram::ShaderProgram(std::string_view vShaderFile,
   Shader fShader = Shader(ShaderType::FRAGMENT);
   fShader.compile(fShaderFile);
 
-  programId = glCreateProgram();
-  glAttachShader(programId, vShader.getId());
-  glAttachShader(programId, fShader.getId());
-  glLinkProgram(programId);
-  glDetachShader(programId, vShader.getId());
-  glDetachShader(programId, fShader.getId());
+  rawProgram = std::make_unique<RawShaderProgram>();
+  unsigned int programID = rawProgram->getID();
+  glAttachShader(programID, vShader.getID());
+  glAttachShader(programID, fShader.getID());
+  glLinkProgram(programID);
+  glDetachShader(programID, vShader.getID());
+  glDetachShader(programID, fShader.getID());
 
   int success;
-  glGetProgramiv(programId, GL_LINK_STATUS, &success);
+  glGetProgramiv(programID, GL_LINK_STATUS, &success);
   if (!success)
     throw std::runtime_error("Cannot link the shader program!");
 }
@@ -84,22 +85,23 @@ ShaderProgram::ShaderProgram(std::string_view vShaderFile,
   Shader fShader = Shader(ShaderType::FRAGMENT);
   fShader.compile(fShaderFile);
 
-  programId = glCreateProgram();
-  glAttachShader(programId, vShader.getId());
-  glAttachShader(programId, gShader.getId());
-  glAttachShader(programId, fShader.getId());
-  glLinkProgram(programId);
-  glDetachShader(programId, vShader.getId());
-  glDetachShader(programId, gShader.getId());
-  glDetachShader(programId, fShader.getId());
+  rawProgram = std::make_unique<RawShaderProgram>();
+  unsigned int programID = rawProgram->getID();
+  glAttachShader(programID, vShader.getID());
+  glAttachShader(programID, gShader.getID());
+  glAttachShader(programID, fShader.getID());
+  glLinkProgram(programID);
+  glDetachShader(programID, vShader.getID());
+  glDetachShader(programID, gShader.getID());
+  glDetachShader(programID, fShader.getID());
 
   int success;
-  glGetProgramiv(programId, GL_LINK_STATUS, &success);
+  glGetProgramiv(programID, GL_LINK_STATUS, &success);
   if (!success)
     throw std::runtime_error("Cannot link the shader program!");
 }
 
-void ShaderProgram::use() const { glUseProgram(programId); }
+void ShaderProgram::use() const { rawProgram->use(); }
 
 bool ShaderProgram::setTexture(TextureType textureType, int textureNumber,
                                int textureUnit) const {
