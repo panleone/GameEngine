@@ -6,12 +6,43 @@
 enum class TextureType { DIFFUSE, SPECULAR };
 
 /**
+ * RAII class to take in account the throwing destructor of Texture
+ */
+class stbiWrapper {
+public:
+  int width;
+  int height;
+  int nChannels;
+  stbiWrapper(std::string_view texturePath);
+  ~stbiWrapper();
+  stbiWrapper(const stbiWrapper &wrapper) = delete;
+  stbiWrapper(stbiWrapper &&wrapper) = delete;
+  const unsigned char *getData() const { return data; };
+
+private:
+  unsigned char *data{nullptr};
+};
+/**
+ * RAII class to take in account the throwing destructor of Texture
+ */
+class RawTexture {
+private:
+  unsigned int textureID;
+
+public:
+  RawTexture(const RawTexture &rawTexture) = delete;
+  RawTexture(RawTexture &&rawTexture) = delete;
+  RawTexture();
+  ~RawTexture();
+  void bind() const;
+};
+/**
  * This class represents a texture. It's neither movable nor copyable,
  * wrap it inside a shared_ptr to make multiple Models with the same texture
  */
 class Texture {
 private:
-  unsigned int textureID;
+  RawTexture rawTexture;
   TextureType type;
 
 public:
@@ -27,7 +58,6 @@ public:
   Texture(Texture &&texture) = delete;
   void bind() const;
   TextureType getType() const { return type; };
-  ~Texture();
 };
 
 #endif // TEXTURE_C

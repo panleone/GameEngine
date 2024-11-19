@@ -2,6 +2,7 @@
 #define LIGHT_C
 
 #include "../math/Matrix.h"
+#include "Entity.h"
 
 class Light : public Entity {
 public:

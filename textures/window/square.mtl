@@ -1,0 +1,9 @@
+newmtl Scene_-_Root
+   Ka 1.000 1.000 1.000
+   Kd 1.000 1.000 1.000
+   Ks 0.000 0.000 0.000
+   d 1.0
+   illum 2
+   # the ambient texture map
+   map_Kd diffuse.png
+   map_Ks diffuse.png

@@ -1,12 +1,8 @@
 #include <filesystem>
-#include <map>
-#include <cassert>
-
-#include <vector>
-#include <ranges>
 
 #include "WindowManager.h"
 #include "objects/Entity.h"
+#include "objects/EntityManager.h"
 #include "objects/Light.h"
 #include "Camera.h"
 
@@ -44,6 +40,9 @@ std::map<std::string, Model> loadModels() {
   // 2) Cube model
   std::string cubePath = getAbsPath("textures/cube/cube.obj");
   res.insert(std::make_pair("cube", Model{cubePath}));
+  // 3) Square model
+  std::string squarePath = getAbsPath("textures/window/square.obj");
+  res.insert(std::make_pair("square", Model{squarePath}));
   return res;
 }
 
@@ -67,94 +66,26 @@ std::map<std::string, ShaderProgram> loadShaders() {
   return res;
 }
 
-// TODO: move in another file
-class EntityManager {
-  std::vector<Entity *> entities;
-  std::vector<Light *> lights;
-  std::map<std::string, ShaderProgram> shaders;
-
-public:
-  EntityManager(std::map<std::string, ShaderProgram> shaders)
-      : shaders{std::move(shaders)} {};
-  void addEntity(Entity *entity) { entities.push_back(entity); };
-  void addLight(Light *source) {
-    lights.push_back(source);
-    auto &entityShader = shaders.at("entity");
-    entityShader.use();
-    std::string uniformName = std::format("lights[{}]", lights.size() - 1);
-    entityShader.setUniform(std::format("{}.ambient", uniformName),
-                            source->ambientIntensity);
-    entityShader.setUniform(std::format("{}.diffuse", uniformName),
-                            source->diffuseIntensity);
-    entityShader.setUniform(std::format("{}.specular", uniformName),
-                            source->specularIntensity);
-    entityShader.setUniform(std::format("{}.attenuation", uniformName),
-                            source->attenuationCoefficients);
-    entityShader.setUniform("nLights", lights.size());
-  };
-  void update(float deltaTime) {
-    for (Entity *entity : entities) {
-      entity->update(deltaTime);
-    }
-    for (Light *light : lights) {
-      light->update(deltaTime);
-    }
-    // Update light positions in the entity shader
-    auto &entityShader = shaders.at("entity");
-    entityShader.use();
-    for (const auto &[i, light] : std::views::enumerate(lights)) {
-      std::string uniformName = std::format("lights[{}]", i);
-      entityShader.setUniform(std::format("{}.position", uniformName),
-                              light->position);
-    }
-  }
-  void render(const Camera &camera) {
-    auto &entityShader = shaders.at("entity");
-    entityShader.use();
-    auto pvMatrix = camera.getProjectionMatrix() * camera.getViewMatrix();
-    entityShader.setUniform("pvMatrix", pvMatrix);
-    entityShader.setUniform("eyePos", camera.getCameraPos());
-    for (const Entity *entity : entities) {
-      entityShader.setUniform("mMatrix", entity->modelMatrix());
-      entity->render(entityShader);
-    }
-    auto &lightShader = shaders.at("light");
-    lightShader.use();
-    for (const Light *light : lights) {
-      lightShader.setUniform("lightColor", light->lightColor);
-      lightShader.setUniform("pvmMatrix", camera.getProjectionMatrix() *
-                                              camera.getViewMatrix() *
-                                              light->modelMatrix());
-      light->render(lightShader);
-    }
-  }
-};
 int main() {
-  EntityManager entityManager{loadShaders()};
   // Load models and create entities from them
   auto models = loadModels();
 
+  // Build a scene
   Entity backpack(models.at("backpack"));
-  backpack.rotationAxis = Vec3f(0.0f, 0.0f, 1.0f);
-  backpack.angularVelocity = 0.0f;
-  entityManager.addEntity(&backpack);
-
-  Light light{models.at("cube"), Vec3f(1.0f, 0.0f, 0.0f)};
-  light.position(0) = -4.0f;
+  backpack.position(2) = 2.0f;
+  backpack.scale = 0.3f;
+  Entity window1(models.at("square"));
+  Entity window2(models.at("square"));
+  window2.position(2) = 1.0f;
+  Light light{models.at("cube"), Vec3f(1.0f, 1.0f, 1.0f)};
+  light.position(1) = -0.5f;
   light.scale = 0.2f;
-  Light light2{models.at("cube"), Vec3f(0.0f, 1.0f, 0.0f)};
-  light2.position(0) = 4.0f;
-  light2.scale = 0.2f;
-  Light light3{models.at("cube"), Vec3f(1.0f, 1.0f, 1.0f)};
-  light3.position(1) = 4.0f;
-  light3.scale = 0.2f;
-  Light light4{models.at("cube"), Vec3f(0.0f, 0.0f, 1.0f)};
-  light4.position(1) = -4.0f;
-  light4.scale = 0.2f;
+
+  EntityManager entityManager{loadShaders()};
+  entityManager.addSolidEntity(&backpack);
+  entityManager.addTransparentEntity(&window1);
+  entityManager.addTransparentEntity(&window2);
   entityManager.addLight(&light);
-  entityManager.addLight(&light2);
-  entityManager.addLight(&light3);
-  entityManager.addLight(&light4);
 
   Camera camera{45, Vec3f{0.0f, 3.0f, 3.0f}};
 

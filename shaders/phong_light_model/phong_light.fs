@@ -29,9 +29,7 @@ uniform int nLights = 0;
 
 uniform bool blinnCorrection = true;
 
-vec3 CalcLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos){
-    vec3 diffuseTexel = vec3(texture(material.texture_diffuse1, TexCoord));
-    vec3 specularTexel = vec3(texture(material.texture_specular1, TexCoord));
+vec3 CalcLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos, vec3 diffuseTexel, vec3 specularTexel, vec3 viewDir){
 
     vec3 ambient = light.ambient * diffuseTexel;
 
@@ -40,7 +38,6 @@ vec3 CalcLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos){
     vec3 diffusion = light.diffuse * diff * diffuseTexel;
 
     float spec = 0;
-    vec3 viewDir = normalize(eyePos - fragPos);
     if(blinnCorrection){
         vec3 halfwayDir = normalize(lightDir + viewDir);
         spec = pow(max(dot(halfwayDir, normal), 0.0), 32.0);
@@ -58,9 +55,15 @@ vec3 CalcLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos){
 }
 void main()
 {
+    vec4 diffuseVec = vec4(texture(material.texture_diffuse1, TexCoord));
+    vec3 specularTexel = vec3(texture(material.texture_specular1, TexCoord));
+    vec3 diffuseTexel = diffuseVec.xyz;
+    float alpha = diffuseVec.w;
+    vec3 viewDir = normalize(eyePos - fragPos);
+
     vec3 color = vec3(0.0);
     for (int i = 0; i < nLights; i++){
-        color += CalcLightColor(lights[i], normal, fragPos, eyePos);
+        color += CalcLightColor(lights[i], normal, fragPos, eyePos, diffuseTexel, specularTexel, viewDir);
     }
-    FragColor = vec4(color, 1.0);
+    FragColor = vec4(color, alpha);
 }

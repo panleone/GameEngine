@@ -68,6 +68,9 @@ WindowManager::WindowManager(float screenWidth, float screenHeight)
   glfwSetCursorPosCallback(window, mouse_callback);
   // Enable gamma correction
   glEnable(GL_FRAMEBUFFER_SRGB);
+  // Enable blending
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 bool WindowManager::created{false};
