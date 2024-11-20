@@ -33,7 +33,7 @@ static unsigned int getImageOutputFormat(unsigned int nChannels,
 }
 
 Texture::Texture(std::string_view texturePath, TextureType type, bool gammaCorr)
-    : type{type}, rawTexture{} {
+    : type{type}, rawTexture{BUFFER_TYPE::TEXTURE} {
   stbi_set_flip_vertically_on_load(true);
   stbiWrapper wrapper{texturePath};
   rawTexture.bind();
@@ -46,10 +46,6 @@ Texture::Texture(std::string_view texturePath, TextureType type, bool gammaCorr)
 }
 
 void Texture::bind() const { rawTexture.bind(); }
-
-void RawTexture::bind() const { glBindTexture(GL_TEXTURE_2D, textureID); }
-RawTexture::RawTexture() { glGenTextures(1, &textureID); }
-RawTexture::~RawTexture() { glDeleteBuffers(1, &textureID); }
 
 stbiWrapper::stbiWrapper(std::string_view texturePath) {
   data = stbi_load(texturePath.data(), &width, &height, &nChannels, 0);

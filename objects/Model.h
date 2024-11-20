@@ -6,36 +6,19 @@
 #include <span>
 #include <unordered_map>
 
+#include "../buffer/Buffer.h"
 #include "../math/Matrix.h"
 #include "../shaders/Shader.h"
 #include "../textures/Texture.h"
 
 /**
  * VBO + VAO + EBO.
- * Neither copyable nor movable.
- * Wrap it inside a shared_ptr<> to create different Models that share the same
- * VAO
  */
 class RawMesh {
 public:
-  unsigned int vaoID;
-  unsigned int vboID;
-  unsigned int eboID;
-  RawMesh(const RawMesh &rawMesh) = delete;
-  RawMesh(RawMesh &&rawMesh) = delete;
-  RawMesh() {
-    glGenVertexArrays(1, &vaoID);
-    glGenBuffers(1, &vboID);
-    glGenBuffers(1, &eboID);
-  }
-  ~RawMesh() {
-    glDeleteBuffers(1, &eboID);
-    glDeleteBuffers(1, &vboID);
-    glDeleteVertexArrays(1, &vaoID);
-  }
-  const unsigned int &getVAO() { return vaoID; };
-  const unsigned int &getVBO() { return vboID; };
-  const unsigned int &getEBO() { return eboID; };
+  Buffer vao{BUFFER_TYPE::VAO};
+  Buffer vbo{BUFFER_TYPE::VBO};
+  Buffer ebo{BUFFER_TYPE::EBO};
 };
 
 struct Vertex {
