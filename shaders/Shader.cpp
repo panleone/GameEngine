@@ -95,3 +95,7 @@ bool ShaderProgram::setTexture(TextureType textureType, int textureNumber,
   return setUniform(textureTypeConverter(textureType, textureNumber),
                     textureUnit);
 }
+
+bool ShaderProgram::setPostProcessing(int textureUnit) const {
+  return setUniform("postProcessing", textureUnit);
+}

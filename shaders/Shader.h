@@ -61,6 +61,10 @@ public:
    */
   bool setTexture(TextureType textureType, int textureNumber,
                   int textureUnit) const;
+  /**
+   * Set a post processing color buffer in the specified textureUnit
+   */
+  bool setPostProcessing(int textureUnit) const;
 
 private:
   std::unique_ptr<Buffer> rawProgram;
