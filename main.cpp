@@ -1,6 +1,7 @@
 #include <filesystem>
 
 #include "WindowManager.h"
+#include "buffer/FrameBuffer.h"
 #include "objects/Entity.h"
 #include "objects/EntityManager.h"
 #include "objects/Light.h"
@@ -40,9 +41,12 @@ std::map<std::string, Model> loadModels() {
   // 2) Cube model
   std::string cubePath = getAbsPath("textures/cube/cube.obj");
   res.insert(std::make_pair("cube", Model{cubePath}));
-  // 3) Square model
-  std::string squarePath = getAbsPath("textures/window/square.obj");
-  res.insert(std::make_pair("square", Model{squarePath}));
+  // 3) Transparent window model
+  std::string windowPath = getAbsPath("textures/window/square.obj");
+  res.insert(std::make_pair("window", Model{windowPath}));
+  // 4) Empty rectangle model for post processing
+  std::string rectanglePath = getAbsPath("textures/rectangle/rectangle.obj");
+  res.insert(std::make_pair("rectangle", Model{rectanglePath}));
   return res;
 }
 
@@ -63,35 +67,47 @@ std::map<std::string, ShaderProgram> loadShaders() {
                              "shaders/normal_visualizer/normal_visualizer.fs",
                              "shaders/normal_visualizer/normal_visualizer.gs");
   res.insert(std::make_pair("normal", std::move(normalShader)));
+
+  // 3) Shader for post-processing
+  ShaderProgram postProcessingShader(
+      "shaders/post_processing/post_processing.vs",
+      "shaders/post_processing/post_processing.fs");
+  res.insert(
+      std::make_pair("post_processing", std::move(postProcessingShader)));
   return res;
 }
 
 int main() {
   // Load models and create entities from them
   auto models = loadModels();
+  auto shaders = loadShaders();
 
   // Build a scene
   Entity backpack(models.at("backpack"));
   backpack.position(2) = 2.0f;
   backpack.scale = 0.3f;
-  Entity window1(models.at("square"));
-  Entity window2(models.at("square"));
+  Entity window1(models.at("window"));
+  Entity window2(models.at("window"));
   window2.position(2) = 1.0f;
   Light light{models.at("cube"), Vec3f(1.0f, 1.0f, 1.0f)};
   light.position(1) = -0.5f;
   light.scale = 0.2f;
 
-  EntityManager entityManager{loadShaders()};
+  EntityManager entityManager{shaders};
   entityManager.addSolidEntity(&backpack);
   entityManager.addTransparentEntity(&window1);
   entityManager.addTransparentEntity(&window2);
   entityManager.addLight(&light);
 
-  Camera camera{45, Vec3f{0.0f, 3.0f, 3.0f}};
+  Camera camera{45, Vec3f{0.0f, 0.0f, 3.0f}};
+
+  // Create the post-processing variables
+  FrameBuffer postProcessingFBO{globalWindowManager->screenWidth,
+                                globalWindowManager->screenHeight};
+  Entity postProcessingTarget(models.at("rectangle"));
+  auto &postProcessingShader = shaders.at("post_processing");
 
   globalWindowManager->disableMouseCursor();
-  glEnable(GL_DEPTH_TEST);
-
   float deltaTime;
   float lastFrame = glfwGetTime();
   float startTime = glfwGetTime();
@@ -110,9 +126,23 @@ int main() {
     entityManager.update(deltaTime);
 
     // render
+    glDisable(GL_FRAMEBUFFER_SRGB);
+    postProcessingFBO.bind();
+    glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     entityManager.render(camera);
+
+    // post processing
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_DEPTH_TEST);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    postProcessingShader.use();
+    glActiveTexture(GL_TEXTURE0);
+    postProcessingFBO.bindColor();
+    postProcessingShader.setPostProcessing(0);
+    postProcessingTarget.render(postProcessingShader);
     globalWindowManager->swapBuffers();
   }
 }
