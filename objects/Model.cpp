@@ -26,12 +26,12 @@ void Mesh::setupMesh(std::span<Vertex> vertices,
   // Generate buffers
   rawMesh = std::make_shared<RawMesh>();
 
-  glBindVertexArray(rawMesh->getVAO());
-  glBindBuffer(GL_ARRAY_BUFFER, rawMesh->getVBO());
+  rawMesh->vao.bind();
+  rawMesh->vbo.bind();
   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex),
                vertices.data(), GL_STATIC_DRAW);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rawMesh->getEBO());
+  rawMesh->ebo.bind();
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
                indices.data(), GL_STATIC_DRAW);
 
@@ -70,7 +70,7 @@ void Mesh::render(const ShaderProgram &shader) const {
     shader.setTexture(texture->getType(), number, i);
     texture->bind();
   }
-  glBindVertexArray(rawMesh->getVAO());
+  rawMesh->vao.bind();
   glDrawElements(GL_TRIANGLES, this->nVertices, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 }

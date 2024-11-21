@@ -3,6 +3,8 @@
 
 #include <string_view>
 
+#include "../buffer/Buffer.h"
+
 enum class TextureType { DIFFUSE, SPECULAR };
 
 /**
@@ -22,27 +24,14 @@ public:
 private:
   unsigned char *data{nullptr};
 };
-/**
- * RAII class to take in account the throwing destructor of Texture
- */
-class RawTexture {
-private:
-  unsigned int textureID;
 
-public:
-  RawTexture(const RawTexture &rawTexture) = delete;
-  RawTexture(RawTexture &&rawTexture) = delete;
-  RawTexture();
-  ~RawTexture();
-  void bind() const;
-};
 /**
  * This class represents a texture. It's neither movable nor copyable,
  * wrap it inside a shared_ptr to make multiple Models with the same texture
  */
 class Texture {
 private:
-  RawTexture rawTexture;
+  Buffer rawTexture;
   TextureType type;
 
 public:

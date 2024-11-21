@@ -66,8 +66,8 @@ WindowManager::WindowManager(float screenWidth, float screenHeight)
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetScrollCallback(window, scroll_callback);
   glfwSetCursorPosCallback(window, mouse_callback);
-  // Enable gamma correction
-  glEnable(GL_FRAMEBUFFER_SRGB);
+  // gamma correction is done in the post processing stage
+  glDisable(GL_FRAMEBUFFER_SRGB);
   // Enable blending
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

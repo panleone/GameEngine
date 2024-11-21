@@ -22,11 +22,11 @@ class EntityManager {
   std::vector<Entity *> transparentEntities;
   // Light sources
   std::vector<Light *> lights;
-  std::map<std::string, ShaderProgram> shaders;
+  std::map<std::string, ShaderProgram> &shaders;
 
 public:
-  EntityManager(std::map<std::string, ShaderProgram> shaders)
-      : shaders{std::move(shaders)} {};
+  EntityManager(std::map<std::string, ShaderProgram> &shaders)
+      : shaders{shaders} {};
   void addSolidEntity(Entity *entity) { solidEntities.push_back(entity); };
   void addTransparentEntity(Entity *entity) {
     transparentEntities.push_back(entity);
