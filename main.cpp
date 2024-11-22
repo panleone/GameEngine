@@ -1,4 +1,6 @@
 #include <filesystem>
+#include <chrono>
+#include <thread>
 
 #include "WindowManager.h"
 #include "buffer/FrameBuffer.h"
@@ -84,20 +86,29 @@ int main() {
 
   // Build a scene
   Entity backpack(models.at("backpack"));
-  backpack.position(2) = 2.0f;
   backpack.scale = 0.3f;
-  Entity window1(models.at("window"));
-  Entity window2(models.at("window"));
-  window2.position(2) = 1.0f;
-  PointLight light{models.at("cube"), Vec3f(1.0f, 1.0f, 1.0f)};
-  light.position(1) = -0.5f;
-  light.scale = 0.2f;
+  std::vector<PointLight> lights;
+  for (int i = 0; i < 10; i++) {
+    const float R = 3.0f;
+    // Weird way to generate "random" numbers
+    // TODO: write a RNG class
+    float t = glfwGetTime() * 10000.0f;
+    float t2 = (t + 0.1f) * 10000.0f;
+    PointLight light{models.at("cube"), Vec3f{sin(t), cos(t), sin(2.0f * t)}};
+    light.position =
+        Vec3f{cos(t) * sin(t2) * R, sin(t) * sin(t2) * R, R * cos(t2)};
+    light.scale = 0.2f;
+    lights.push_back(std::move(light));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  DirectionalLight dirLight{Vec3f(0.0f, 0.0f, 1.0f), Vec3f(0.1f, 0.1f, 0.1f)};
 
   EntityManager entityManager{shaders};
   entityManager.addSolidEntity(&backpack);
-  entityManager.addTransparentEntity(&window1);
-  entityManager.addTransparentEntity(&window2);
-  entityManager.addPointLight(&light);
+  for (auto &light : lights) {
+    entityManager.addPointLight(&light);
+  }
+  entityManager.setDirectionalLight(&dirLight);
 
   Camera camera{45, Vec3f{0.0f, 0.0f, 3.0f}};
 
