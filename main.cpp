@@ -89,7 +89,7 @@ int main() {
   Entity window1(models.at("window"));
   Entity window2(models.at("window"));
   window2.position(2) = 1.0f;
-  Light light{models.at("cube"), Vec3f(1.0f, 1.0f, 1.0f)};
+  PointLight light{models.at("cube"), Vec3f(1.0f, 1.0f, 1.0f)};
   light.position(1) = -0.5f;
   light.scale = 0.2f;
 
@@ -97,7 +97,7 @@ int main() {
   entityManager.addSolidEntity(&backpack);
   entityManager.addTransparentEntity(&window1);
   entityManager.addTransparentEntity(&window2);
-  entityManager.addLight(&light);
+  entityManager.addPointLight(&light);
 
   Camera camera{45, Vec3f{0.0f, 0.0f, 3.0f}};
 

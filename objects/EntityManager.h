@@ -20,8 +20,11 @@ class EntityManager {
   // Entities that are transparent or partially transparent,
   // for example a window
   std::vector<Entity *> transparentEntities;
-  // Light sources
-  std::vector<Light *> lights;
+  // Point light sources
+  std::vector<PointLight *> lights;
+  // Directional light, for the moment at most one because
+  // they are expensive to simulate (non local, they act on all entities)
+  DirectionalLight *dirLight{nullptr};
   std::map<std::string, ShaderProgram> &shaders;
 
 public:
@@ -31,7 +34,9 @@ public:
   void addTransparentEntity(Entity *entity) {
     transparentEntities.push_back(entity);
   };
-  void addLight(Light *source);
+  void addPointLight(PointLight *source);
+  void setDirectionalLight(DirectionalLight *source);
+
   void update(float deltaTime);
   void render(const Camera &camera);
 

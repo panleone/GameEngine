@@ -20,7 +20,7 @@ void EntityManager::render(const Camera &camera) {
 void EntityManager::renderLights(const Camera &camera) {
   auto &lightShader = shaders.at("light");
   lightShader.use();
-  for (const Light *light : lights) {
+  for (const PointLight *light : lights) {
     lightShader.setUniform("lightColor", light->lightColor);
     lightShader.setUniform("pvmMatrix", camera.getProjectionMatrix() *
                                             camera.getViewMatrix() *
@@ -55,7 +55,7 @@ void EntityManager::renderEntities(const Camera &camera) {
   // https://en.wikipedia.org/wiki/Order-independent_transparency
 }
 
-void EntityManager::addLight(Light *source) {
+void EntityManager::addPointLight(PointLight *source) {
   lights.push_back(source);
   auto &entityShader = shaders.at("entity");
   entityShader.use();
@@ -70,6 +70,10 @@ void EntityManager::addLight(Light *source) {
   entityShader.setUniform(std::format("{}.attenuation", uniformName),
                           source->attenuationCoefficients);
   entityShader.setUniform("nLights", lights.size());
+}
+
+void EntityManager::setDirectionalLight(DirectionalLight *source) {
+    dirLight = source;
 }
 
 void EntityManager::iterEntities(std::function<void(Entity *)> fn,
