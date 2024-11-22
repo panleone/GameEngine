@@ -43,6 +43,8 @@ public:
       glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, val.data().data());
     } else if constexpr (std::is_same_v<std::decay_t<T>, Vec3f>) {
       glUniform3fv(uniformLocation, 1, val.data().data());
+    } else if constexpr (std::is_same_v<std::decay_t<T>, Vec4f>) {
+      glUniform4fv(uniformLocation, 1, val.data().data());
     } else if constexpr (std::is_same_v<std::decay_t<T>, std::size_t>) {
       glUniform1i(uniformLocation, std::forward<T>(val));
     } else {

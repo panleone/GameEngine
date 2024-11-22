@@ -12,6 +12,8 @@
 #include "Model.h"
 
 class EntityManager {
+  // Distance after which point lights have no effect
+  static constexpr float LIGHT_D2_CUTOFF = 100.0f;
   // vector of pointers due to possible future inheritance
   // TODO: instead use references? unique/shared_ptrs?
 
@@ -44,6 +46,14 @@ private:
   void iterEntities(std::function<void(Entity *)> fn, bool includeLights);
   void renderLights(const Camera &camera);
   void renderEntities(const Camera &camera);
+  void renderEntity(const Entity *entity);
+
+  // TODO: Move this functions in Shader.h
+  void addLightToEntityShader(const Light *light, std::string_view lightName);
+  void addPointLightToEntityShader(const PointLight *light,
+                                   std::string_view lightName);
+  void addDirectionalLightToEntityShader(const DirectionalLight *light,
+                                         std::string_view lightName);
 };
 
 #endif // ENTITY_MANAGER_C

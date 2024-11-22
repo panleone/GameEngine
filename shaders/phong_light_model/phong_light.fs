@@ -7,7 +7,9 @@ struct Material {
 };
 
 struct Light {
-    vec3 position;
+    // For point light the lightVector is the position of the light source. Fourth component is 1.0
+    // For directional lights the lightVector is the direction of the light rays. Fourth component is 0.0
+    vec4 lightVector;
 
     vec3 ambient;
     vec3 diffuse;
@@ -23,17 +25,15 @@ out vec4 FragColor;
 
 uniform vec3 eyePos;
 uniform Material material;
-#define N_MAX_LIGHTS 10
+#define N_MAX_LIGHTS 100
 uniform Light lights[N_MAX_LIGHTS];
 uniform int nLights = 0;
 
 uniform bool blinnCorrection = true;
 
-vec3 CalcLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos, vec3 diffuseTexel, vec3 specularTexel, vec3 viewDir){
-
+vec3 CalcLightInternal(Light light, vec3 normal, vec3 eyePos, vec3 diffuseTexel, vec3 specularTexel, vec3 viewDir, vec3 lightDir){
     vec3 ambient = light.ambient * diffuseTexel;
 
-    vec3 lightDir = normalize(light.position - fragPos);
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffusion = light.diffuse * diff * diffuseTexel;
 
@@ -47,12 +47,26 @@ vec3 CalcLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos, vec3 di
     }
     vec3 specular = light.specular * specularTexel * spec;
 
-    float d = length(fragPos - light.position);
+    return (ambient + diffusion + specular);
+}
+
+vec3 CalcPointLightColor(Light light, vec3 normal, vec3 fragPos, vec3 eyePos, vec3 diffuseTexel, vec3 specularTexel, vec3 viewDir){
+    vec3 lightPos = light.lightVector.xyz;
+    vec3 lightDir = normalize(lightPos - fragPos);
+    vec3 partial = CalcLightInternal(light, normal, eyePos, diffuseTexel, specularTexel, viewDir, lightDir);
+
+    float d = length(fragPos - lightPos);
     vec3 dVec = vec3(1, d, d*d);
     float attenuation = 1.0/dot(light.attenuation, dVec);
 
-    return (ambient + diffusion + specular) * attenuation;
+    return partial * attenuation;
 }
+
+vec3 CalcDirLightColor(Light light, vec3 normal, vec3 eyePos, vec3 diffuseTexel, vec3 specularTexel, vec3 viewDir) {
+    vec3 lightDir = normalize(-light.lightVector.xyz);
+    return CalcLightInternal(light, normal, eyePos, diffuseTexel, specularTexel, viewDir, lightDir);
+}
+
 void main()
 {
     vec4 diffuseVec = vec4(texture(material.texture_diffuse1, TexCoord));
@@ -63,7 +77,11 @@ void main()
 
     vec3 color = vec3(0.0);
     for (int i = 0; i < nLights; i++){
-        color += CalcLightColor(lights[i], normal, fragPos, eyePos, diffuseTexel, specularTexel, viewDir);
+        if(lights[i].lightVector.w > 0.99) {
+            color += CalcPointLightColor(lights[i], normal, fragPos, eyePos, diffuseTexel, specularTexel, viewDir);
+        } else {
+            color += CalcDirLightColor(lights[i], normal, eyePos, diffuseTexel, specularTexel, viewDir);
+        }
     }
     FragColor = vec4(color, alpha);
 }
