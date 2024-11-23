@@ -9,14 +9,20 @@ static std::string fileToString(std::string_view fileLocation) {
   return stringStream.str();
 }
 
+// TODO: improve with a better caching system
+std::vector<std::string> diffuseShaderVar{"material.texture_diffuse1",
+                                          "material.texture_diffuse2"};
+std::vector<std::string> specularShaderVar{"material.texture_specular1",
+                                           "material.texture_specular2"};
+
 // Follow this convention when creating shaders
-static std::string textureTypeConverter(TextureType textureType,
-                                        int textureNumber) {
+static std::string &textureTypeConverter(TextureType textureType,
+                                         int textureNumber) {
   switch (textureType) {
   case TextureType::DIFFUSE:
-    return std::format("material.texture_diffuse{}", textureNumber);
+    return diffuseShaderVar.at(textureNumber - 1);
   case TextureType::SPECULAR:
-    return std::format("material.texture_specular{}", textureNumber);
+    return specularShaderVar.at(textureNumber - 1);
   default:
     throw std::runtime_error("texture type not supported yet");
   }

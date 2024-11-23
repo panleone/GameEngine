@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-std=c++23 -I./libs/include
+CXXFLAGS=-std=c++23 -I./libs/include -g
 LIBS = -lglfw -lglm -lassimp
 
 OBJ = main.o WindowManager.o Camera.o \

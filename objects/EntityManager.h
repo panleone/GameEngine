@@ -12,6 +12,8 @@
 #include "Model.h"
 
 class EntityManager {
+  // Distance after which point lights have no effect
+  static constexpr float LIGHT_D2_CUTOFF = 100.0f;
   // vector of pointers due to possible future inheritance
   // TODO: instead use references? unique/shared_ptrs?
 
@@ -20,8 +22,11 @@ class EntityManager {
   // Entities that are transparent or partially transparent,
   // for example a window
   std::vector<Entity *> transparentEntities;
-  // Light sources
-  std::vector<Light *> lights;
+  // Point light sources
+  std::vector<PointLight *> lights;
+  // Directional light, for the moment at most one because
+  // they are expensive to simulate (non local, they act on all entities)
+  DirectionalLight *dirLight{nullptr};
   std::map<std::string, ShaderProgram> &shaders;
 
 public:
@@ -31,7 +36,9 @@ public:
   void addTransparentEntity(Entity *entity) {
     transparentEntities.push_back(entity);
   };
-  void addLight(Light *source);
+  void addPointLight(PointLight *source);
+  void setDirectionalLight(DirectionalLight *source);
+
   void update(float deltaTime);
   void render(const Camera &camera);
 
@@ -39,6 +46,14 @@ private:
   void iterEntities(std::function<void(Entity *)> fn, bool includeLights);
   void renderLights(const Camera &camera);
   void renderEntities(const Camera &camera);
+  void renderEntity(const Entity *entity);
+
+  // TODO: Move this functions in Shader.h
+  void addLightToEntityShader(const Light *light, std::string_view lightName);
+  void addPointLightToEntityShader(const PointLight *light,
+                                   std::string_view lightName);
+  void addDirectionalLightToEntityShader(const DirectionalLight *light,
+                                         std::string_view lightName);
 };
 
 #endif // ENTITY_MANAGER_C

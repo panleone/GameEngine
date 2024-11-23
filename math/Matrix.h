@@ -20,8 +20,8 @@ public:
   Matrix<T, N, M> &operator=(Matrix<T, N, M> mat);
   Matrix<T, N, M> clone() const;
 
-  T &operator()(std::size_t x, std::size_t y);
-  const T &operator()(std::size_t x, std::size_t y) const;
+  inline T &operator()(std::size_t x, std::size_t y);
+  inline const T &operator()(std::size_t x, std::size_t y) const;
 
   // Basic operations
   // 1) matrix-scalar operations
@@ -42,27 +42,15 @@ public:
   }
 };
 
-// Check that i < Max
-inline void checkBounds(std::size_t Max, std::size_t i,
-                        std::string_view err_msg) {
-  if (i >= Max) {
-    throw std::runtime_error(err_msg.data());
-  }
-}
-
 // x column y row
 template <typename T, std::size_t N, std::size_t M>
 T &Matrix<T, N, M>::operator()(std::size_t x, std::size_t y) {
-  checkBounds(N, x, "Matrix<>::operator(): x-coordinate out of bound");
-  checkBounds(M, y, "Matrix<>::operator(): y-coordinate out of bound");
   return matData[x + y * N];
 }
 
 // x column y row
 template <typename T, std::size_t N, std::size_t M>
 const T &Matrix<T, N, M>::operator()(std::size_t x, std::size_t y) const {
-  checkBounds(N, x, "Matrix<>::operator(): x-coordinate out of bound");
-  checkBounds(M, y, "Matrix<>::operator(): y-coordinate out of bound");
   return matData[x + y * N];
 }
 
