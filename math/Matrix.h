@@ -13,10 +13,12 @@ template <typename T, std::size_t N, std::size_t M> class Matrix {
 protected:
   std::vector<T> matData = std::vector<T>(N * M);
 
+private:
+  Matrix(const Matrix<T, N, M> &mat) : matData{mat.matData} {};
+
 public:
   Matrix() = default;
   Matrix(Matrix<T, N, M> &&mat) : matData{std::move(mat.matData)} {};
-  Matrix(const Matrix<T, N, M> &mat) = delete;
   Matrix<T, N, M> &operator=(Matrix<T, N, M> mat);
   Matrix<T, N, M> clone() const;
 
@@ -62,9 +64,7 @@ Matrix<T, N, M> &Matrix<T, N, M>::operator=(Matrix<T, N, M> mat) {
 
 template <typename T, std::size_t N, std::size_t M>
 Matrix<T, N, M> Matrix<T, N, M>::clone() const {
-  Matrix<T, N, M> ret;
-  ret.matData = this->matData;
-  return ret;
+  return Matrix<T, N, M>{*this};
 };
 
 template <typename T, std::size_t N, std::size_t M>
