@@ -33,10 +33,8 @@ public:
     if (uniformLocation == -1) {
       return false;
     }
-    // Fetch the program in use
-    GLint activeProgramID = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &activeProgramID);
-    rawProgram->bind();
+    // Assert that the program is active
+    assertProgramInUse();
     if constexpr (std::is_same_v<std::decay_t<T>, int>) {
       glUniform1i(uniformLocation, std::forward<T>(val));
     } else if constexpr (std::is_same_v<std::decay_t<T>, float>) {
@@ -52,8 +50,6 @@ public:
     } else {
       static_assert(false);
     }
-    // Reactivate the old program
-    glUseProgram(activeProgramID);
     return true;
   }
   /**
@@ -75,6 +71,7 @@ public:
 
 private:
   std::unique_ptr<Buffer> rawProgram;
+  void assertProgramInUse() const;
 };
 
 // Middle ground between the Light C++ class (See Light.h)

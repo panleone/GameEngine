@@ -47,7 +47,6 @@ void EntityManager::renderEntities(const Camera &camera) {
 void EntityManager::renderEntity(const Entity *entity) {
   // Update light positions in the entity shader
   auto &entityShader = shaders.at("entity");
-  entityShader.use();
   entityShader.setUniform("mMatrix", entity->modelMatrix());
   size_t found = 0;
   // Find which light are close enough to have an effect

@@ -1,4 +1,7 @@
 #include "Shader.h"
+
+#include <cassert>
+
 #include "ShaderCache.h"
 
 static std::string fileToString(std::string_view fileLocation) {
@@ -131,4 +134,10 @@ bool ShaderProgram::addLightToEntityShader(const LightBinding &light,
 
 bool ShaderProgram::setPostProcessing(int textureUnit) const {
   return setUniform("postProcessing", textureUnit);
+}
+
+void ShaderProgram::assertProgramInUse() const {
+  GLint activeProgramID = 0;
+  glGetIntegerv(GL_CURRENT_PROGRAM, &activeProgramID);
+  assert(rawProgram->getID() == activeProgramID);
 }
