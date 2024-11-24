@@ -12,11 +12,10 @@ void EntityManager::render(const Camera &camera) {
 void EntityManager::renderLights(const Camera &camera) {
   auto &lightShader = shaders.at("light");
   lightShader.use();
+  Mat4f pvMatrix = camera.getProjectionMatrix() * camera.getViewMatrix();
   for (const PointLight *light : lights) {
     lightShader.setUniform("lightColor", light->lightColor);
-    lightShader.setUniform("pvmMatrix", camera.getProjectionMatrix() *
-                                            camera.getViewMatrix() *
-                                            light->modelMatrix());
+    lightShader.setUniform("pvmMatrix", pvMatrix * light->modelMatrix());
     light->render(lightShader);
   }
 }
