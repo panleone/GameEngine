@@ -54,7 +54,6 @@ void Mesh::setupMesh(std::span<Vertex> vertices,
 void Mesh::render(const ShaderProgram &shader) const {
   rawMesh->vao.bind();
   glDrawElements(GL_TRIANGLES, this->nVertices, GL_UNSIGNED_INT, 0);
-  glBindVertexArray(0);
 }
 
 Model::Model(std::string_view path) { loadModel(path); }
@@ -66,6 +65,7 @@ void Model::render(const ShaderProgram &shader) const {
     for (const auto &[i, texture] : std::views::enumerate(textures)) {
       int number;
       glActiveTexture(GL_TEXTURE0 + i);
+      texture->bind();
       if (texture->getType() == TextureType::DIFFUSE) {
         number = ++diffuseNr;
       } else if (texture->getType() == TextureType::SPECULAR) {
@@ -76,7 +76,6 @@ void Model::render(const ShaderProgram &shader) const {
       // Ignore the return type since some shaders
       // simply might not be using all the textures of the model.
       shader.setTexture(texture->getType(), number, i);
-      texture->bind();
     }
     for (const auto &mesh : mesh_block) {
       mesh.render(shader);
