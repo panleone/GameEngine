@@ -47,13 +47,6 @@ private:
   void renderLights(const Camera &camera);
   void renderEntities(const Camera &camera);
   void renderEntity(const Entity *entity);
-
-  // TODO: Move this functions in Shader.h
-  void addLightToEntityShader(const Light *light, std::string_view lightName);
-  void addPointLightToEntityShader(const PointLight *light,
-                                   std::string_view lightName);
-  void addDirectionalLightToEntityShader(const DirectionalLight *light,
-                                         std::string_view lightName);
 };
 
 #endif // ENTITY_MANAGER_C

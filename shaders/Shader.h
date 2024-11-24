@@ -10,6 +10,8 @@
 #include "../math/Matrix.h"
 #include "../textures/Texture.h"
 
+class LightBinding;
+
 class Shader {
 public:
   explicit Shader(BUFFER_TYPE shaderType) noexcept : rawShader{shaderType} {};
@@ -68,8 +70,25 @@ public:
    */
   bool setPostProcessing(int textureUnit) const;
 
+  // TODO: Split shader.h in multiple files
+  bool addLightToEntityShader(const LightBinding &light, int lightNumber);
+
 private:
   std::unique_ptr<Buffer> rawProgram;
+};
+
+// Middle ground between the Light C++ class (See Light.h)
+// and the GLSL light struct (See phong_light.fs)
+class LightBinding {
+public:
+  Vec4f lightVector;
+  const Vec3f *ambient{nullptr};
+  const Vec3f *diffuse{nullptr};
+  const Vec3f *specular{nullptr};
+  const Vec3f *attenuation{nullptr};
+  LightBinding(Vec4f lightVector) : lightVector{std::move(lightVector)} {};
+  LightBinding(LightBinding &&lightBinding) = default;
+  LightBinding(const LightBinding &lightBinding) = delete;
 };
 
 #endif // SHADER_C
