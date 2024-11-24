@@ -30,8 +30,7 @@ struct Vertex {
 
 class Mesh {
 public:
-  Mesh(std::span<Vertex> vertices, std::span<unsigned int> indices,
-       std::vector<std::shared_ptr<Texture>> textures);
+  Mesh(std::span<Vertex> vertices, std::span<unsigned int> indices);
   // Thanks to shared_ptr copy is cheap.
   Mesh(const Mesh &mesh) = default;
   Mesh(Mesh &&mesh) = default;
@@ -39,9 +38,6 @@ public:
 
 private:
   std::shared_ptr<RawMesh> rawMesh;
-  // TODO: make an owner class of all texture
-  //  and use references instead of shared_ptr?
-  std::vector<std::shared_ptr<Texture>> textures;
   size_t nVertices;
   void setupMesh(std::span<Vertex> vertices, std::span<unsigned int> indices);
 };
@@ -59,7 +55,8 @@ public:
   void render(const ShaderProgram &program) const;
 
 private:
-  std::vector<Mesh> meshes;
+  using MeshTextures = std::vector<std::shared_ptr<Texture>>;
+  std::vector<std::pair<std::vector<Mesh>, MeshTextures>> meshes;
   // The following variables are cleared once the Model is loaded.
   // map path -> texture,
   std::unordered_map<std::string, std::shared_ptr<Texture>> loadedTextures;
@@ -68,8 +65,9 @@ private:
   void loadModel(std::string_view path);
   void processNode(aiNode *node, const aiScene *scene);
   Mesh processMesh(aiMesh *mesh, const aiScene *scene);
-  std::vector<std::shared_ptr<Texture>>
-  loadMaterialTextures(aiMaterial *mat, aiTextureType type);
+  MeshTextures processMeshTexture(aiMesh *mesh, const aiScene *scene);
+  MeshTextures loadMaterialTextures(aiMaterial *mat, aiTextureType type);
+  void addMesh(Mesh mesh, MeshTextures meshTextures);
 };
 
 #endif // MODEL_C

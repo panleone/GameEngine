@@ -15,9 +15,8 @@ static TextureType assimpConverter(aiTextureType type) {
   }
 }
 
-Mesh::Mesh(std::span<Vertex> vertices, std::span<unsigned int> indices,
-           std::vector<std::shared_ptr<Texture>> textures)
-    : nVertices{indices.size()}, textures{std::move(textures)} {
+Mesh::Mesh(std::span<Vertex> vertices, std::span<unsigned int> indices)
+    : nVertices{indices.size()} {
   setupMesh(vertices, indices);
 }
 
@@ -53,23 +52,6 @@ void Mesh::setupMesh(std::span<Vertex> vertices,
 }
 
 void Mesh::render(const ShaderProgram &shader) const {
-  unsigned int diffuseNr = 0;
-  unsigned int specularNr = 0;
-  for (const auto &[i, texture] : std::views::enumerate(textures)) {
-    int number;
-    glActiveTexture(GL_TEXTURE0 + i);
-    if (texture->getType() == TextureType::DIFFUSE) {
-      number = ++diffuseNr;
-    } else if (texture->getType() == TextureType::SPECULAR) {
-      number = ++specularNr;
-    } else {
-      throw std::runtime_error("Texture not supported yet");
-    }
-    // Ignore the return type since some shaders
-    // simply might not be using all the textures of the model.
-    shader.setTexture(texture->getType(), number, i);
-    texture->bind();
-  }
   rawMesh->vao.bind();
   glDrawElements(GL_TRIANGLES, this->nVertices, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
@@ -77,9 +59,28 @@ void Mesh::render(const ShaderProgram &shader) const {
 
 Model::Model(std::string_view path) { loadModel(path); }
 
-void Model::render(const ShaderProgram &program) const {
-  for (const Mesh &mesh : meshes) {
-    mesh.render(program);
+void Model::render(const ShaderProgram &shader) const {
+  for (const auto &[mesh_block, textures] : meshes) {
+    unsigned int diffuseNr = 0;
+    unsigned int specularNr = 0;
+    for (const auto &[i, texture] : std::views::enumerate(textures)) {
+      int number;
+      glActiveTexture(GL_TEXTURE0 + i);
+      if (texture->getType() == TextureType::DIFFUSE) {
+        number = ++diffuseNr;
+      } else if (texture->getType() == TextureType::SPECULAR) {
+        number = ++specularNr;
+      } else {
+        throw std::runtime_error("Texture not supported yet");
+      }
+      // Ignore the return type since some shaders
+      // simply might not be using all the textures of the model.
+      shader.setTexture(texture->getType(), number, i);
+      texture->bind();
+    }
+    for (const auto &mesh : mesh_block) {
+      mesh.render(shader);
+    }
   }
 }
 
@@ -100,7 +101,10 @@ void Model::loadModel(std::string_view path) {
 
 void Model::processNode(aiNode *node, const aiScene *scene) {
   for (int i = 0; i < node->mNumMeshes; i++) {
-    meshes.push_back(processMesh(scene->mMeshes[node->mMeshes[i]], scene));
+    Mesh mesh = processMesh(scene->mMeshes[node->mMeshes[i]], scene);
+    MeshTextures meshTextures =
+        processMeshTexture(scene->mMeshes[node->mMeshes[i]], scene);
+    addMesh(std::move(mesh), std::move(meshTextures));
   }
   for (int i = 0; i < node->mNumChildren; i++) {
     processNode(node->mChildren[i], scene);
@@ -110,7 +114,6 @@ void Model::processNode(aiNode *node, const aiScene *scene) {
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
   std::vector<Vertex> vertices;
   std::vector<unsigned int> indices;
-  std::vector<std::shared_ptr<Texture>> textures;
 
   for (int i = 0; i < mesh->mNumVertices; i++) {
     Vertex vertex;
@@ -136,25 +139,31 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
       indices.push_back(face.mIndices[j]);
     }
   }
+  return Mesh{vertices, indices};
+}
+
+Model::MeshTextures Model::processMeshTexture(aiMesh *mesh,
+                                              const aiScene *scene) {
+  MeshTextures textures;
   if (mesh->mMaterialIndex >= 0) {
     aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-    std::vector<std::shared_ptr<Texture>> diffuseMaps =
+    MeshTextures diffuseMaps =
         loadMaterialTextures(material, aiTextureType_DIFFUSE);
     textures.insert(textures.end(),
                     std::make_move_iterator(diffuseMaps.begin()),
                     std::make_move_iterator(diffuseMaps.end()));
-    std::vector<std::shared_ptr<Texture>> specularMaps =
+    MeshTextures specularMaps =
         loadMaterialTextures(material, aiTextureType_SPECULAR);
     textures.insert(textures.end(),
                     std::make_move_iterator(specularMaps.begin()),
                     std::make_move_iterator(specularMaps.end()));
   }
-  return Mesh{vertices, indices, std::move(textures)};
+  return textures;
 }
 
-std::vector<std::shared_ptr<Texture>>
-Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type) {
-  std::vector<std::shared_ptr<Texture>> res;
+Model::MeshTextures Model::loadMaterialTextures(aiMaterial *mat,
+                                                aiTextureType type) {
+  MeshTextures res;
   for (int i = 0; i < mat->GetTextureCount(type); i++) {
     aiString str;
     mat->GetTexture(type, i, &str);
@@ -170,4 +179,20 @@ Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type) {
     res.push_back(std::move(texture));
   }
   return res;
+}
+
+void Model::addMesh(Mesh mesh, MeshTextures meshTextures) {
+  // Check if the same vector of textures has already been loaded
+  for (auto &[mesh_block, textures] : meshes) {
+    // TODO: consider the case in which textures are the same
+    //  but in a different order?
+    if (textures == meshTextures) {
+      mesh_block.push_back(std::move(mesh));
+      return;
+    }
+  }
+
+  // Create a new mesh block
+  meshes.push_back(
+      std::pair(std::vector<Mesh>{std::move(mesh)}, std::move(meshTextures)));
 }
