@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-std=c++23 -I./libs/include -g
+CXXFLAGS=-std=c++23 -I./libs/include -g -O2
 LIBS = -lglfw -lglm -lassimp
 
 OBJ = main.o WindowManager.o Camera.o \
@@ -32,7 +32,7 @@ glad.o:
 
 .PHONY: clean format
 clean:
-	find . -type f -name '*.o*' -exec rm {} +
+	find . -type f -name '*.o' -exec rm {} +
 	-rm "$(BIN)"
 
 format:
