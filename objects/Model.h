@@ -5,6 +5,7 @@
 #include <memory>
 #include <span>
 #include <unordered_map>
+#include <vector>
 
 #include "../buffer/Buffer.h"
 #include "../math/Matrix.h"

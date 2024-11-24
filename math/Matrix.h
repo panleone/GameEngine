@@ -4,20 +4,29 @@
 #include <ostream>
 #include <span>
 #include <type_traits>
-#include <vector>
+#include <array>
 
 #include "math.h"
 
 // N number of rows, M number of columns
 template <typename T, std::size_t N, std::size_t M> class Matrix {
 protected:
-  std::vector<T> matData = std::vector<T>(N * M);
+  // Why using std::array instead of std::vector?
+  // The biggest matrices we deal with are only 4x4.
+  // Therefore with std::vector operations like matrix product
+  // had as bottleneck the heap allocation/deallocation.
+  // At the same time with std::array we lose the std::move property
+  // but profiling is showing that it's not a problem.
+  std::array<T, N * M> matData{};
 
 private:
   Matrix(const Matrix<T, N, M> &mat) : matData{mat.matData} {};
 
 public:
   Matrix() = default;
+  // TODO: Once we make sure that std::array<>
+  // doesn't give any problem with stack size,
+  // remove all std::vector remains (move constructor, .clone, etc...)
   Matrix(Matrix<T, N, M> &&mat) : matData{std::move(mat.matData)} {};
   Matrix<T, N, M> &operator=(Matrix<T, N, M> mat);
   Matrix<T, N, M> clone() const;
