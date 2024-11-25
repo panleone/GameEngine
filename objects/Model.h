@@ -17,9 +17,9 @@
  */
 class RawMesh {
 public:
-  Buffer vao{BUFFER_TYPE::VAO};
-  Buffer vbo{BUFFER_TYPE::VBO};
-  Buffer ebo{BUFFER_TYPE::EBO};
+  Buffer<BUFFER_TYPE::VAO> vao;
+  Buffer<BUFFER_TYPE::VBO> vbo;
+  Buffer<BUFFER_TYPE::EBO> ebo;
 };
 
 struct Vertex {

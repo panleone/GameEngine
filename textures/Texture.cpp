@@ -33,7 +33,7 @@ static unsigned int getImageOutputFormat(unsigned int nChannels,
 }
 
 Texture::Texture(std::string_view texturePath, TextureType type, bool gammaCorr)
-    : type{type}, rawTexture{BUFFER_TYPE::TEXTURE} {
+    : type{type} {
   stbi_set_flip_vertically_on_load(true);
   stbiWrapper wrapper{texturePath};
   rawTexture.bind();

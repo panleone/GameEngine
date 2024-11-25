@@ -13,31 +13,39 @@ static std::string fileToString(std::string_view fileLocation) {
   return stringStream.str();
 }
 
-void Shader::compile(std::string_view shaderFile) const {
-  auto shaderID = rawShader.getID();
-  std::string shaderSourceCode = fileToString(shaderFile);
-  auto shaderSourceCodePtr = shaderSourceCode.data();
-  glShaderSource(shaderID, 1, &shaderSourceCodePtr, nullptr);
-  glCompileShader(shaderID);
+template <BUFFER_TYPE shaderType>
+  requires(shaderType == BUFFER_TYPE::SHADER_VERTEX ||
+           shaderType == BUFFER_TYPE::SHADER_FRAGMENT ||
+           shaderType == BUFFER_TYPE::SHADER_GEOMETRY)
+class Shader {
+public:
+  Buffer<shaderType> rawShader;
+  void compile(std::string_view shaderFile) const {
+    auto shaderID = rawShader.getID();
+    std::string shaderSourceCode = fileToString(shaderFile);
+    auto shaderSourceCodePtr = shaderSourceCode.data();
+    glShaderSource(shaderID, 1, &shaderSourceCodePtr, nullptr);
+    glCompileShader(shaderID);
 
-  int success;
-  char infoLog[512];
-  glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(shaderID, sizeof infoLog, nullptr, infoLog);
-    throw std::runtime_error(infoLog);
+    int success;
+    char infoLog[512];
+    glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+    if (!success) {
+      glGetShaderInfoLog(shaderID, sizeof infoLog, nullptr, infoLog);
+      throw std::runtime_error(infoLog);
+    }
   }
-}
+};
 
 ShaderProgram::ShaderProgram(std::string_view vShaderFile,
                              std::string_view fShaderFile) {
-  Shader vShader = Shader(BUFFER_TYPE::SHADER_VERTEX);
+  Shader<BUFFER_TYPE::SHADER_VERTEX> vShader;
   vShader.compile(vShaderFile);
 
-  Shader fShader = Shader(BUFFER_TYPE::SHADER_FRAGMENT);
+  Shader<BUFFER_TYPE::SHADER_FRAGMENT> fShader;
   fShader.compile(fShaderFile);
 
-  rawProgram = std::make_unique<Buffer>(BUFFER_TYPE::SHADER_PROGRAM);
+  rawProgram = std::make_unique<Buffer<BUFFER_TYPE::SHADER_PROGRAM>>();
   unsigned int programID = rawProgram->getID();
   glAttachShader(programID, vShader.rawShader.getID());
   glAttachShader(programID, fShader.rawShader.getID());
@@ -54,16 +62,16 @@ ShaderProgram::ShaderProgram(std::string_view vShaderFile,
 ShaderProgram::ShaderProgram(std::string_view vShaderFile,
                              std::string_view fShaderFile,
                              std::string_view gShaderFile) {
-  Shader vShader = Shader(BUFFER_TYPE::SHADER_VERTEX);
+  Shader<BUFFER_TYPE::SHADER_VERTEX> vShader;
   vShader.compile(vShaderFile);
 
-  Shader gShader = Shader(BUFFER_TYPE::SHADER_GEOMETRY);
+  Shader<BUFFER_TYPE::SHADER_GEOMETRY> gShader;
   gShader.compile(gShaderFile);
 
-  Shader fShader = Shader(BUFFER_TYPE::SHADER_FRAGMENT);
+  Shader<BUFFER_TYPE::SHADER_FRAGMENT> fShader;
   fShader.compile(fShaderFile);
 
-  rawProgram = std::make_unique<Buffer>(BUFFER_TYPE::SHADER_PROGRAM);
+  rawProgram = std::make_unique<Buffer<BUFFER_TYPE::SHADER_PROGRAM>>();
   unsigned int programID = rawProgram->getID();
   glAttachShader(programID, vShader.rawShader.getID());
   glAttachShader(programID, gShader.rawShader.getID());

@@ -12,13 +12,6 @@
 
 class LightBinding;
 
-class Shader {
-public:
-  explicit Shader(BUFFER_TYPE shaderType) noexcept : rawShader{shaderType} {};
-  void compile(std::string_view shaderFile) const;
-  Buffer rawShader;
-};
-
 class ShaderProgram {
 public:
   ShaderProgram(std::string_view vShaderFile, std::string_view fShaderFile);
@@ -70,7 +63,7 @@ public:
   bool addLightToEntityShader(const LightBinding &light, int lightNumber);
 
 private:
-  std::unique_ptr<Buffer> rawProgram;
+  std::unique_ptr<Buffer<BUFFER_TYPE::SHADER_PROGRAM>> rawProgram;
   void assertProgramInUse() const;
 };
 
