@@ -9,6 +9,8 @@
 class Entity {
 private:
   Model model;
+  // Scaling
+  Vec4f scale{1.0f, 1.0f, 1.0f, 1.0f};
 
 public:
   // Linear coordinates
@@ -18,8 +20,6 @@ public:
   float theta = 0.0f;
   Vec3f rotationAxis = Vec3f();
   float angularVelocity = 0.0f;
-  // Scaling
-  float scale = 1.0f;
 
   Entity(Model model) : model{std::move(model)} {};
   void update(float deltaT) {
@@ -27,10 +27,13 @@ public:
     theta += angularVelocity * deltaT;
   }
   void render(const ShaderProgram &program) const { model.render(program); };
-
+  void setScale(float newScale) {
+    scale = Vec4f{newScale, newScale, newScale, 1.0f};
+  };
   Mat4f modelMatrix() const {
-    return mat::translate(position) * mat::scale(Vec3f{scale, scale, scale}) *
-           mat::rotate(theta, rotationAxis);
+    Mat4f translation = mat::translate(position);
+    mat::multByDiagonal(translation, scale);
+    return translation * mat::rotate(theta, rotationAxis);
   }
 };
 #endif // ENTITY_C

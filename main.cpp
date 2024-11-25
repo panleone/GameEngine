@@ -86,7 +86,7 @@ int main() {
 
   // Build a scene
   Entity backpack(models.at("backpack"));
-  backpack.scale = 0.3f;
+  backpack.setScale(0.3f);
   std::vector<PointLight> lights;
   for (int i = 0; i < 10; i++) {
     const float R = 3.0f;
@@ -97,7 +97,7 @@ int main() {
     PointLight light{models.at("cube"), Vec3f{sin(t), cos(t), sin(2.0f * t)}};
     light.position =
         Vec3f{cos(t) * sin(t2) * R, sin(t) * sin(t2) * R, R * cos(t2)};
-    light.scale = 0.2f;
+    light.setScale(0.2f);
     lights.push_back(std::move(light));
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
