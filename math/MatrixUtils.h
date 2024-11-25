@@ -60,6 +60,20 @@ inline Mat4f rotate(float theta, const Vec3f &direction) {
   return rotationMatrix;
 }
 
+/**
+ * Fast way to multiply by a diagonal matrix.
+ * The result of the multiplication is stored in mat
+ * @param mat - 4x4 matrix
+ * @param diag - Diagonal elements of a diagonal matrix
+ * @return mat*diag
+ */
+inline void multByDiagonal(Mat4f &mat, const Vec4f &diag) {
+  for (size_t j = 0; j < 4; j++) {
+    for (size_t i = 0; i < 4; i++) {
+      mat(i, j) = mat(i, j) * diag(j);
+    }
+  }
+}
 // Returns cross product between v1 and v2
 inline Vec3f cross(const Vec3f &v1, const Vec3f &v2) {
   return Vec3f(v1(1) * v2(2) - v1(2) * v2(1), v1(2) * v2(0) - v1(0) * v2(2),
