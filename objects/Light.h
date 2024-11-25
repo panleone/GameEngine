@@ -19,6 +19,13 @@ public:
     specularIntensity = this->lightColor.clone();
   }
   virtual Vec4f getLightVector() const = 0;
+  LightBinding toShaderFormat() const {
+    LightBinding res{this->getLightVector()};
+    res.ambient = &ambientIntensity;
+    res.diffuse = &diffuseIntensity;
+    res.specular = &specularIntensity;
+    return res;
+  }
   virtual ~Light() = default;
 };
 
@@ -33,6 +40,11 @@ public:
     const Vec3f &pos = this->position;
     return Vec4f{pos(0), pos(1), pos(2), 1.0f};
   }
+  LightBinding toShaderFormat() const {
+    LightBinding res = Light::toShaderFormat();
+    res.attenuation = &attenuationCoefficients;
+    return res;
+  }
 };
 
 class DirectionalLight : public Light {
@@ -43,6 +55,7 @@ public:
   Vec4f getLightVector() const override {
     return Vec4f{direction(0), direction(1), direction(2), 0.0f};
   }
+  LightBinding toShaderFormat() const { return Light::toShaderFormat(); }
 };
 
 #endif // LIGHT_C

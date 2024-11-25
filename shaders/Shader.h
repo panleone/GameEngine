@@ -10,12 +10,7 @@
 #include "../math/Matrix.h"
 #include "../textures/Texture.h"
 
-class Shader {
-public:
-  explicit Shader(BUFFER_TYPE shaderType) noexcept : rawShader{shaderType} {};
-  void compile(std::string_view shaderFile) const;
-  Buffer rawShader;
-};
+class LightBinding;
 
 class ShaderProgram {
 public:
@@ -31,10 +26,8 @@ public:
     if (uniformLocation == -1) {
       return false;
     }
-    // Fetch the program in use
-    GLint activeProgramID = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &activeProgramID);
-    rawProgram->bind();
+    // Assert that the program is active
+    assertProgramInUse();
     if constexpr (std::is_same_v<std::decay_t<T>, int>) {
       glUniform1i(uniformLocation, std::forward<T>(val));
     } else if constexpr (std::is_same_v<std::decay_t<T>, float>) {
@@ -50,8 +43,6 @@ public:
     } else {
       static_assert(false);
     }
-    // Reactivate the old program
-    glUseProgram(activeProgramID);
     return true;
   }
   /**
@@ -68,8 +59,26 @@ public:
    */
   bool setPostProcessing(int textureUnit) const;
 
+  // TODO: Split shader.h in multiple files
+  bool addLightToEntityShader(const LightBinding &light, int lightNumber);
+
 private:
-  std::unique_ptr<Buffer> rawProgram;
+  std::unique_ptr<Buffer<BUFFER_TYPE::SHADER_PROGRAM>> rawProgram;
+  void assertProgramInUse() const;
+};
+
+// Middle ground between the Light C++ class (See Light.h)
+// and the GLSL light struct (See phong_light.fs)
+class LightBinding {
+public:
+  Vec4f lightVector;
+  const Vec3f *ambient{nullptr};
+  const Vec3f *diffuse{nullptr};
+  const Vec3f *specular{nullptr};
+  const Vec3f *attenuation{nullptr};
+  LightBinding(Vec4f lightVector) : lightVector{std::move(lightVector)} {};
+  LightBinding(LightBinding &&lightBinding) = default;
+  LightBinding(const LightBinding &lightBinding) = delete;
 };
 
 #endif // SHADER_C

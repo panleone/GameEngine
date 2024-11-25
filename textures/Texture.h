@@ -31,7 +31,7 @@ private:
  */
 class Texture {
 private:
-  Buffer rawTexture;
+  Buffer<BUFFER_TYPE::TEXTURE> rawTexture;
   TextureType type;
 
 public:

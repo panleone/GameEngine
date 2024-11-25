@@ -7,10 +7,10 @@
 
 // Color buffer + depth buffer + stencil buffer
 struct RawFrameBuffer {
-  Buffer fbo{BUFFER_TYPE::FBO};
+  Buffer<BUFFER_TYPE::FBO> fbo;
   // TODO: This is not the most general frame buffer
-  Buffer color{BUFFER_TYPE::TEXTURE};
-  Buffer depth_stencil{BUFFER_TYPE::RBO};
+  Buffer<BUFFER_TYPE::TEXTURE> color;
+  Buffer<BUFFER_TYPE::RBO> depth_stencil;
 };
 class FrameBuffer {
 private:
