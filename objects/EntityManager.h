@@ -7,6 +7,8 @@
 
 #include "../Camera.h"
 #include "../shaders/Shader.h"
+#include "../shaders/phong_light_model/EntityShader.h"
+#include "../shaders/light_source/LightShader.h"
 #include "Light.h"
 #include "Entity.h"
 #include "Model.h"
@@ -27,11 +29,12 @@ class EntityManager {
   // Directional light, for the moment at most one because
   // they are expensive to simulate (non local, they act on all entities)
   DirectionalLight *dirLight{nullptr};
-  std::map<std::string, ShaderProgram> &shaders;
+  EntityShader &entityShader;
+  LightShader &lightShader;
 
 public:
-  EntityManager(std::map<std::string, ShaderProgram> &shaders)
-      : shaders{shaders} {};
+  EntityManager(EntityShader &entityShader, LightShader &lightShader)
+      : entityShader{entityShader}, lightShader{lightShader} {};
   void addSolidEntity(Entity *entity) { solidEntities.push_back(entity); };
   void addTransparentEntity(Entity *entity) {
     transparentEntities.push_back(entity);

@@ -10,22 +10,18 @@ void EntityManager::render(const Camera &camera) {
 }
 
 void EntityManager::renderLights(const Camera &camera) {
-  auto &lightShader = shaders.at("light");
   lightShader.use();
   Mat4f pvMatrix = camera.getProjectionMatrix() * camera.getViewMatrix();
   for (const PointLight *light : lights) {
-    lightShader.setUniform("lightColor", light->lightColor);
-    lightShader.setUniform("pvmMatrix", pvMatrix * light->modelMatrix());
+    lightShader.setLightColor(light->lightColor);
+    lightShader.setPvmMatrix(pvMatrix * light->modelMatrix());
     light->render(lightShader);
   }
 }
 
 void EntityManager::renderEntities(const Camera &camera) {
-  auto &entityShader = shaders.at("entity");
   entityShader.use();
-  auto pvMatrix = camera.getProjectionMatrix() * camera.getViewMatrix();
-  entityShader.setUniform("pvMatrix", pvMatrix);
-  entityShader.setUniform("eyePos", camera.getCameraPos());
+  entityShader.setCamera(camera);
   // Step 1 - Draw all solid Entities
   for (const Entity *entity : solidEntities) {
     renderEntity(entity);
@@ -46,21 +42,20 @@ void EntityManager::renderEntities(const Camera &camera) {
 
 void EntityManager::renderEntity(const Entity *entity) {
   // Update light positions in the entity shader
-  auto &entityShader = shaders.at("entity");
-  entityShader.setUniform("mMatrix", entity->modelMatrix());
+  entityShader.setModelMatrix(entity->modelMatrix());
   size_t found = 0;
   // Find which light are close enough to have an effect
   if (dirLight) {
-    entityShader.addLightToEntityShader(dirLight->toShaderFormat(), found);
+    entityShader.setDirectionalLight(*dirLight, found);
     found += 1;
   }
   for (PointLight *light : this->lights) {
     if (mat::distance2(light->position, entity->position) < LIGHT_D2_CUTOFF) {
-      entityShader.addLightToEntityShader(light->toShaderFormat(), found);
+      entityShader.setPointLight(*light, found);
       found += 1;
     }
   }
-  entityShader.setUniform("nLights", found);
+  entityShader.setNumberOfLights(found);
   entity->render(entityShader);
 }
 

@@ -26,7 +26,7 @@ public:
     position += velocity * deltaT;
     theta += angularVelocity * deltaT;
   }
-  void render(const ShaderProgram &program) const { model.render(program); };
+  void render(ShaderProgram &program) const { model.render(program); };
   void setScale(float newScale) {
     scale = Vec4f{newScale, newScale, newScale, 1.0f};
   };

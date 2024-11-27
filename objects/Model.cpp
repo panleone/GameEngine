@@ -51,14 +51,14 @@ void Mesh::setupMesh(std::span<Vertex> vertices,
   glBindVertexArray(0);
 }
 
-void Mesh::render(const ShaderProgram &shader) const {
+void Mesh::render() const {
   rawMesh->vao.bind();
   glDrawElements(GL_TRIANGLES, this->nVertices, GL_UNSIGNED_INT, 0);
 }
 
 Model::Model(std::string_view path) { loadModel(path); }
 
-void Model::render(const ShaderProgram &shader) const {
+void Model::render(ShaderProgram &shader) const {
   for (const auto &[mesh_block, textures] : meshes) {
     unsigned int diffuseNr = 0;
     unsigned int specularNr = 0;
@@ -78,7 +78,7 @@ void Model::render(const ShaderProgram &shader) const {
       shader.setTexture(texture->getType(), number, i);
     }
     for (const auto &mesh : mesh_block) {
-      mesh.render(shader);
+      mesh.render();
     }
   }
 }
