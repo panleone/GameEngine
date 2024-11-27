@@ -6,6 +6,7 @@
 #include "buffer/FrameBuffer.h"
 #include "objects/Entity.h"
 #include "objects/EntityManager.h"
+#include "shaders/post_processing/PostProcessingShader.h"
 #include "objects/Light.h"
 #include "Camera.h"
 
@@ -52,37 +53,14 @@ std::map<std::string, Model> loadModels() {
   return res;
 }
 
-std::map<std::string, ShaderProgram> loadShaders() {
-  std::map<std::string, ShaderProgram> res;
-  // 1) Default shader for entities
-  ShaderProgram entityShader("shaders/phong_light_model/phong_light.vs",
-                             "shaders/phong_light_model/phong_light.fs",
-                             "shaders/phong_light_model/phong_light.gs");
-  res.insert(std::make_pair("entity", std::move(entityShader)));
-  // 2) Shader for light sources
-  ShaderProgram lightShader("shaders/light_source/light_source.vs",
-                            "shaders/light_source/light_source.fs");
-  res.insert(std::make_pair("light", std::move(lightShader)));
-
-  // 3) Debug shader for visualizing normal vectors
-  ShaderProgram normalShader("shaders/normal_visualizer/normal_visualizer.vs",
-                             "shaders/normal_visualizer/normal_visualizer.fs",
-                             "shaders/normal_visualizer/normal_visualizer.gs");
-  res.insert(std::make_pair("normal", std::move(normalShader)));
-
-  // 3) Shader for post-processing
-  ShaderProgram postProcessingShader(
-      "shaders/post_processing/post_processing.vs",
-      "shaders/post_processing/post_processing.fs");
-  res.insert(
-      std::make_pair("post_processing", std::move(postProcessingShader)));
-  return res;
-}
-
 int main() {
-  // Load models and create entities from them
+  // Load models
   auto models = loadModels();
-  auto shaders = loadShaders();
+
+  // Load shaders
+  EntityShader entityShader{};
+  LightShader lightShader{};
+  PostProcessingShader postProcessingShader{};
 
   // Build a scene
   Entity backpack(models.at("backpack"));
@@ -103,7 +81,7 @@ int main() {
   }
   DirectionalLight dirLight{Vec3f(0.0f, 0.0f, 1.0f), Vec3f(0.1f, 0.1f, 0.1f)};
 
-  EntityManager entityManager{shaders};
+  EntityManager entityManager{entityShader, lightShader};
   entityManager.addSolidEntity(&backpack);
   for (auto &light : lights) {
     entityManager.addPointLight(&light);
@@ -116,7 +94,6 @@ int main() {
   FrameBuffer postProcessingFBO{globalWindowManager->screenWidth,
                                 globalWindowManager->screenHeight};
   Entity postProcessingTarget(models.at("rectangle"));
-  auto &postProcessingShader = shaders.at("post_processing");
 
   globalWindowManager->disableMouseCursor();
   float deltaTime;

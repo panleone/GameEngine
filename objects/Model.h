@@ -35,7 +35,7 @@ public:
   // Thanks to shared_ptr copy is cheap.
   Mesh(const Mesh &mesh) = default;
   Mesh(Mesh &&mesh) = default;
-  void render(const ShaderProgram &shader) const;
+  void render() const;
 
 private:
   std::shared_ptr<RawMesh> rawMesh;
@@ -53,7 +53,7 @@ public:
   Model(const Model &model) = default;
   Model(Model &&model) = default;
 
-  void render(const ShaderProgram &program) const;
+  void render(ShaderProgram &program) const;
 
 private:
   using MeshTextures = std::vector<std::shared_ptr<Texture>>;
