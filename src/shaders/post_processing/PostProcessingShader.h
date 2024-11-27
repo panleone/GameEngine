@@ -8,8 +8,8 @@
 class PostProcessingShader : public ShaderProgram {
 public:
   PostProcessingShader()
-      : ShaderProgram("shaders/post_processing/post_processing.vs",
-                      "shaders/post_processing/post_processing.fs") {};
+      : ShaderProgram("src/shaders/post_processing/post_processing.vs",
+                      "src/shaders/post_processing/post_processing.fs") {};
 
   bool setTexture(TextureType textureType, int textureNumber,
                   int textureUnit) override {

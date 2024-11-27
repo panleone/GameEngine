@@ -44,9 +44,9 @@ public:
   void setModelMatrix(const Mat4f &m);
   void setNumberOfLights(int n);
   EntityShader()
-      : ShaderProgram("shaders/phong_light_model/phong_light.vs",
-                      "shaders/phong_light_model/phong_light.fs",
-                      "shaders/phong_light_model/phong_light.gs") {};
+      : ShaderProgram("src/shaders/phong_light_model/phong_light.vs",
+                      "src/shaders/phong_light_model/phong_light.fs",
+                      "src/shaders/phong_light_model/phong_light.gs") {};
 
   bool setTexture(TextureType textureType, int textureNumber,
                   int textureUnit) override;
