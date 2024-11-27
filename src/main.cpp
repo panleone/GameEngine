@@ -39,16 +39,17 @@ std::string getAbsPath(std::string_view relPath) {
 std::map<std::string, Model> loadModels() {
   std::map<std::string, Model> res;
   // 1) Backpack model
-  std::string backpackPath = getAbsPath("textures/backpack/backpack.obj");
+  std::string backpackPath = getAbsPath("src/textures/backpack/backpack.obj");
   res.insert(std::make_pair("backpack", Model{backpackPath}));
   // 2) Cube model
-  std::string cubePath = getAbsPath("textures/cube/cube.obj");
+  std::string cubePath = getAbsPath("src/textures/cube/cube.obj");
   res.insert(std::make_pair("cube", Model{cubePath}));
   // 3) Transparent window model
-  std::string windowPath = getAbsPath("textures/window/square.obj");
+  std::string windowPath = getAbsPath("src/textures/window/square.obj");
   res.insert(std::make_pair("window", Model{windowPath}));
   // 4) Empty rectangle model for post processing
-  std::string rectanglePath = getAbsPath("textures/rectangle/rectangle.obj");
+  std::string rectanglePath =
+      getAbsPath("src/textures/rectangle/rectangle.obj");
   res.insert(std::make_pair("rectangle", Model{rectanglePath}));
   return res;
 }

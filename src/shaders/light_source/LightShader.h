@@ -12,8 +12,8 @@ private:
 
 public:
   LightShader()
-      : ShaderProgram("shaders/light_source/light_source.vs",
-                      "shaders/light_source/light_source.fs") {};
+      : ShaderProgram("src/shaders/light_source/light_source.vs",
+                      "src/shaders/light_source/light_source.fs") {};
 
   void setPvmMatrix(const Mat4f &mat) { pvmMatrix.setUniform(mat); }
   void setLightColor(const Vec3f &color) { lightColor.setUniform(color); }
