@@ -96,14 +96,12 @@ int main() {
   Entity postProcessingTarget(models.at("rectangle"));
 
   globalWindowManager->disableMouseCursor();
+  globalWindowManager->resetTimer();
   float deltaTime;
-  float lastFrame = glfwGetTime();
-  float startTime = glfwGetTime();
   while (!globalWindowManager->shouldClose()) {
     // Compute the elapsed time
-    float currentFrame = glfwGetTime();
-    deltaTime = currentFrame - lastFrame;
-    lastFrame = currentFrame;
+    deltaTime = globalWindowManager->elapsedTimeInSeconds();
+    globalWindowManager->resetTimer();
 
     // handle user inputs
     glfwPollEvents();

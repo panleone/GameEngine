@@ -102,3 +102,7 @@ void WindowManager::disableMouseCursor() {
 void WindowManager::enableMouseCursor() {
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
+
+void WindowManager::resetTimer() { time = glfwGetTime(); }
+
+float WindowManager::elapsedTimeInSeconds() { return glfwGetTime() - time; }

@@ -21,6 +21,9 @@ public:
   float screenWidth;
   float screenHeight;
 
+  // Internal timer
+  float time{0.0f};
+
   WindowManager(const WindowManager &wManager) = delete;
   WindowManager(float screenWidth, float screenHeight);
   ~WindowManager();
@@ -31,6 +34,14 @@ public:
   bool isKeyPressed(int key) const;
   void disableMouseCursor();
   void enableMouseCursor();
+  /**
+   * Reset the interal timer
+   */
+  void resetTimer();
+  /**
+   * @return elapsed time in seconds, since the last updateTimer call
+   */
+  float elapsedTimeInSeconds();
 };
 
 // Global Singleton WindowManager
