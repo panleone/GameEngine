@@ -1,16 +1,15 @@
 #include <filesystem>
-#include <chrono>
-#include <thread>
 
 #include "WindowManager.h"
+
 #include "buffer/FrameBuffer.h"
+#include "Camera.h"
 #include "objects/Entity.h"
 #include "objects/EntityManager.h"
-#include "shaders/post_processing/PostProcessingShader.h"
 #include "objects/Light.h"
-#include "Camera.h"
-
 #include "objects/Model.h"
+#include "shaders/post_processing/PostProcessingShader.h"
+#include "utils/Random.h"
 
 std::unique_ptr<WindowManager> globalWindowManager =
     std::make_unique<WindowManager>(800, 600);
@@ -67,18 +66,18 @@ int main() {
   Entity backpack(models.at("backpack"));
   backpack.setScale(0.3f);
   std::vector<PointLight> lights;
+  const float R = 3.0f;
   for (int i = 0; i < 10; i++) {
-    const float R = 3.0f;
-    // Weird way to generate "random" numbers
-    // TODO: write a RNG class
-    float t = glfwGetTime() * 10000.0f;
-    float t2 = (t + 0.1f) * 10000.0f;
-    PointLight light{models.at("cube"), Vec3f{sin(t), cos(t), sin(2.0f * t)}};
-    light.position =
-        Vec3f{cos(t) * sin(t2) * R, sin(t) * sin(t2) * R, R * cos(t2)};
+    float r = rng::randomFloat(0.0f, 1.0f);
+    float g = rng::randomFloat(0.0f, 1.0f);
+    float b = rng::randomFloat(0.0f, 1.0f);
+    PointLight light{models.at("cube"), Vec3f{r, g, b}};
+    float theta = rng::randomAngle();
+    float phi = rng::randomAngle();
+    light.position = Vec3f{cos(phi) * sin(theta) * R, sin(phi) * sin(theta) * R,
+                           R * cos(theta)};
     light.setScale(0.2f);
     lights.push_back(std::move(light));
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
   DirectionalLight dirLight{Vec3f(0.0f, 0.0f, 1.0f), Vec3f(0.1f, 0.1f, 0.1f)};
 
@@ -97,14 +96,12 @@ int main() {
   Entity postProcessingTarget(models.at("rectangle"));
 
   globalWindowManager->disableMouseCursor();
+  globalWindowManager->resetTimer();
   float deltaTime;
-  float lastFrame = glfwGetTime();
-  float startTime = glfwGetTime();
   while (!globalWindowManager->shouldClose()) {
     // Compute the elapsed time
-    float currentFrame = glfwGetTime();
-    deltaTime = currentFrame - lastFrame;
-    lastFrame = currentFrame;
+    deltaTime = globalWindowManager->elapsedTimeInSeconds();
+    globalWindowManager->resetTimer();
 
     // handle user inputs
     glfwPollEvents();

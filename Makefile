@@ -7,7 +7,8 @@ OBJ = src/main.o src/WindowManager.o src/Camera.o \
 		src/shaders/phong_light_model/EntityShader.o \
  		src/objects/Model.o src/objects/EntityManager.o \
 		src/textures/Texture.o \
-		src/buffer/FrameBuffer.o
+		src/buffer/FrameBuffer.o \
+		src/utils/Random.o
 
 HEADERS =  src/WindowManager.h src/Camera.h \
 			src/math/Matrix.h src/math/MatrixUtils.h \
@@ -17,13 +18,15 @@ HEADERS =  src/WindowManager.h src/Camera.h \
  			src/shaders/light_source/LightShader.h \
  			src/shaders/post_processing/PostProcessingShader.h \
  			src/textures/Texture.h \
- 			src/buffer/Buffer.h src/buffer/FrameBuffer.h
+ 			src/buffer/Buffer.h src/buffer/FrameBuffer.h \
+ 			src/utils/Random.h
 SRC = src/WindowManager.cpp src/main.cpp src/Camera.cpp \
 		src/shaders/Shader.cpp \
 		src/shaders/phong_light_model/EntityShader.cpp \
 		src/objects/Model.cpp src/objects/EntityManager.cpp \
 		src/textures/Texture.cpp \
-		src/buffer/FrameBuffer.cpp
+		src/buffer/FrameBuffer.cpp \
+		src/utils/Random.cpp
 
 BIN = GameEngine
 
